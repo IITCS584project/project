@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.linear_model import LinearRegression
+
 class FactorLinearAnalyst:
     def __init__(self):
         pass
@@ -6,4 +8,5 @@ class FactorLinearAnalyst:
     def Fit(self, X, y):
         X = np.c_[X, np.zeros(len(y))]
         self.weights = np.zeros(len(y))
+        
         pass
