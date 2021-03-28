@@ -9,14 +9,6 @@ class FactorLinearNN(nn.Module):
         self.mFeatureNum = feature_num
         self.fc1 = nn.Linear(feature_num, 1)
 
-    
+    def forward(self, x):
+        return self.fc1(x)
 
-class FactorLinearAnalyst:
-    def __init__(self):
-        pass
-
-    def Fit(self, X, y):
-        X = np.c_[X, np.zeros(len(y))]
-        self.weights = np.zeros(len(y))
-        
-        pass
