@@ -92,3 +92,14 @@ r_p = r_f + \beta(r_m - r_f) + \alpha
 $$
 ![picture 2](images/cd0738c26ee573634feb007939c2bfcb7d4134346ffeec6500959b4b99b67179.png)  
 So if the $r_p$ is above SML( eg. point B), that means the market accept a higher return associates with the market risk, then this security is undervalued. And if $r_p$ is under SML (eg. point A), that means the market accepts a small return associates with market risk.
+### Fama's 3 Factor Model
+From CAPM model's view, the return of a stock derives only from the market's return, or we can say that the market is the only risk. But  in 1993 Fama and French show another model which extends the CAPM introducing SMB and HML
+$$
+r = R_f + \beta (R_m - R_f) + b_s \cdot SMB + b_v \cdot HML + \epsilon
+$$
+It is obviously a linear regression application. Comparing to CAPM, it introduces two new factors: SMB and HML.  
+
+### Multi Factors Model
+With factors, we can can calculate the risk exposure of a portfolio. It is very important to the investing. When I calculate the exposures to factors, I can collect securities with highly positive exposures to specific factors, and 
+
+## Factor Analysis with Neural Network
