@@ -11,6 +11,7 @@ import tushare as ts
 import pandas as pd
 import requests
 import os
+from interval import Interval
 ts.set_token('6b57e4c863aa1e2d55c8ce62742130dd38332aafe1c43f2666dedfe5')
 #显示所有列
 pd.set_option('display.max_columns', None)
@@ -77,15 +78,67 @@ class read_data():
 
         df = pd.read_csv(self.path + "/stocklist.csv", sep=",")
         return df
+
+
+    def get_daily_data_clac(self,code,start_date='',end_date=''):
+        #tips：因为有的指标是需要昨日数据的，所以如果是该股票开盘第一天的话，一些rate 会是 NaN
+        #close_rate_of_increase=今日收盘价/昨天收盘价
+        #avg_rate_of_increase=今日四项平均值/昨日四项平均值
+        #open_today_rate_of_increase=今日收盘价／今日开盘价
+        #middle_rate_of_increase=「1/2(今日最高+今日最低)」/「1/2(昨日最高+昨日最低)」
+        #分类参数 档位{key1:value1 ,key2:value1~value2 ,key3 value3~value4,key4value4~}
+
+        code=str(code.upper())
+        df=pd.read_csv(self.path+"/"+code+".csv", sep=",")
+        df=df.sort_values(["trade_date"],ascending=True)
+        df['close_rate_of_increase']=(df['close']/df['pre_close']-1)*100
+        df['avg_for_OHLC']=(df['close']+df['open']+df['high']+df['low'])/4
+        df['avg_for_HL']=(df['high']+df['low'])/2
+        df['open_today_rate_of_increase']=(df['open']/df['close']-1)*100
+        df['avg_rate_of_increase']=((df['avg_for_OHLC']/df.shift(periods=1)['avg_for_OHLC'])-1)*100
+        df['middle_rate_of_increase']=((df['avg_for_HL']/df.shift(periods=1)['avg_for_HL'])-1)*100
+        del df['avg_for_OHLC']
+        del df['avg_for_HL']
+        df = df.loc[df["trade_date"] >= start_date] if start_date != '' else df
+        df = df.loc[df["trade_date"] <= end_date] if end_date != '' else df
+        return df
+        return df
+    def set_learn_tag(self,df,taglists,columns):
+        #taglist dict 
+        #column str 枚举
+        #仅选择一个指标作为打tag打指标，根据这个指标内容增加一个learn_tag列，根据taglists的key进行打标签
+
+        _columns=['close_rate_of_increase','open_today_rate_of_increase','avg_rate_of_increase','middle_rate_of_increase']
+        if columns not in _columns:
+            print('columns param need to one str of ['+','.join(_columns)+']')
+        df['learn_tag']=None
+        for i in df.index:
+            for key in taglists.keys():
+                index_line=df.index.get_loc(i)
+                if df.iloc[index_line][columns] in taglists.get(key):
+                        df.loc[i,['learn_tag']]=key 
+        return df
+
+
 if __name__ == '__main__':
 
 
-    obj_read=read_data()
-    test=obj_read.get_stock_list()
-    #return dataframe  ts_code  symbol      name area industry  list_date
-    test=obj_read.get_daily_data('000001.SZ',start_date=20210301,end_date=20210302)
-    # # param  code  必填，标的物编码  e.g. 000001.SZ
-    # # param  code  不必填，开始时间，没填写的时候，直到取最早，开始结束都没填写的时候取全部,格式为8位数字
-    # # param  code  不必填，结束时间，没填写的时候，直到取最晚，开始结束都没填写的时候取全部,格式为8位数字
-    # # return dataframe 默认按照trade_date 从早到晚排序，最后一天在最下面
-    # # ts_code trade_date open  high  low  close  pre_close change  pct_chg  vol  amount
+    obj_read=read_data() #声明对象
+    df=obj_read.get_daily_data_clac('000001.SZ',start_date=20200128,end_date=20210302)# 按照开始时间和结束时间取 000001.SZ这个标的物
+
+    taglist={}
+    #定义一个tag dict 增加自定义的分类标记,key的名称将会直接打在数据上
+    taglist['big_short']=Interval(float('-inf'),-3)# 将跌幅无穷到-3% 定义为大跌
+    taglist['small_short']=Interval(-3,-1)#将-3% 到-1% 定义为小跌
+    taglist['middle']=Interval(-1,1)
+    taglist['small_long']=Interval(1,3)
+    taglist['big_long']=Interval(3,float('inf'))
+ 
+    learn_tag_column='middle_rate_of_increase' # 选择根据要打标记的指标
+    #close_rate_of_increase=今日收盘价/昨天收盘价
+    #avg_rate_of_increase=今日四项平均值/昨日四项平均值
+    #open_today_rate_of_increase=今日收盘价／今日开盘价
+    #middle_rate_of_increase=「1/2(今日最高+今日最低)」/「1/2(昨日最高+昨日最低)」
+
+    res=obj_read.set_learn_tag(df,taglist,learn_tag_column) # 按middle_rate_of_increase 这个指标打标记，生成learn_tag标签，用于后续学习和分类
+    print(res)
