@@ -19,13 +19,14 @@ pd.set_option('display.max_rows', None)
 #设置value的显示长度为100，默认为50
 pd.set_option('max_colwidth',100)
 pro = ts.pro_api()
-
+path=os.path.split(os.path.realpath(__file__))[0]
+#print(path)
 class get_data_from_tushare():
 
     def __init__(self):
         self.pro = ts.pro_api()
         self.data=''
-        self.path='data_csv'
+        self.path=path+'/data_csv'
     def get_stock_list(self):
         #获取标的物的列表
         self.data = self.pro.stock_basic(exchange='', list_status='L', fields='ts_code,symbol,name,area,industry,list_date')
@@ -57,7 +58,7 @@ class get_data_from_tushare():
 class read_data():
 
     def __init__(self):
-        self.path='data_csv'
+        self.path=path+'/data_csv'
 
 
     def get_daily_data(self,code,start_date='',end_date=''):
