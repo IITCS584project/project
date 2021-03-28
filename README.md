@@ -1,6 +1,5 @@
 # project
 
-
 ## Things to do
 * Collecting assets' factor data. 
 * Design the methods, and try to predict data 
@@ -48,7 +47,7 @@ Here I use pandas to do the time series analysis.
 
 ### Neural Network
 
-## What are the factors data?
+### What are the factors data?
 I use two kinds of data here:
 * Cross-section data
 * Time series data
@@ -59,7 +58,7 @@ The cross-section data contains 3 kinds of data:
 * Economics data
 
 
-## Backtest system
+### Backtest system
 The most important thing in the investment is to gain the excess return with minimum risk. So if I make the investment decision by the strategy, I need to a good criteria to evaluate whether this strategy is good or not. Sharpe ratio is what I want.
 $$
 S = \frac{E(R-r_f)}{\sigma}
@@ -68,3 +67,28 @@ $$
 * R: yield of asset
 * $r_f$: risk-free rate
 * $\sigma$: standard deviation of asset's yield
+
+## Factor Analysis with Linear Regression
+
+The linear regression is a classical method to analyze how to explain the price's move with the factors. This method focuses on the cross-section data which means it doesn't care about the asset's price moves by the factor every day but only cares about how much the asset is exposed to a specific factor(risk).  
+### CAPM
+For example, the classical CAPM model  
+$$
+E(r_p) = r_f + \beta(r_m - r_f)
+$$
+The line represents this relationship is called Security Market Line(SML).  
+![picture 1](images/2142d7517f72ae232926a1e9cf335c69cf7979478f5e3f24d97adad3726939cf.png)  
+
+Apparently it is an application of linear regression. But how to do this regression in practice?  
+The factor analysis studies on the cross-section data, but the stock prices is a time series data. So I have price series of a stock and the price series of HS300 etf.
+$$
+E(r_p) = \alpha + \beta( r_m - r_f ) \\
+r_p = \frac{\Delta P_t^{stock}}{P_{t-1}^{stock}} - 1 \\
+r_m = \frac{\Delta P_t^{etf}}{P_{t-1}^{etf}} - 1 \\
+$$
+So I can do the regression with a time period. If I find that:
+$$
+r_p = r_f + \beta(r_m - r_f) + \alpha
+$$
+![picture 2](images/cd0738c26ee573634feb007939c2bfcb7d4134346ffeec6500959b4b99b67179.png)  
+So if the $r_p$ is above SML( eg. point B), that means the market accept a higher return associates with the market risk, then this security is undervalued. And if $r_p$ is under SML (eg. point A), that means the market accepts a small return associates with market risk.
