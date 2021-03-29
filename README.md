@@ -1,4 +1,28 @@
 # project
+<!-- TOC -->
+
+- [project](#project)
+  - [Things to do](#things-to-do)
+  - [Descriptions](#descriptions)
+    - [What is the multi-factor investment?](#what-is-the-multi-factor-investment)
+    - [Traditional way to find factors](#traditional-way-to-find-factors)
+    - [Linear Regression](#linear-regression)
+    - [Time Series Analysis](#time-series-analysis)
+    - [Logistic Regression](#logistic-regression)
+    - [Neural Network](#neural-network)
+    - [What are the factors data?](#what-are-the-factors-data)
+    - [Backtest system](#backtest-system)
+  - [Factor Analysis with Linear Regression](#factor-analysis-with-linear-regression)
+    - [CAPM](#capm)
+    - [Fama's 3 Factor Model](#famas-3-factor-model)
+    - [Carhart four-factor Model](#carhart-four-factor-model)
+    - [APT model](#apt-model)
+    - [Multi Factors Model](#multi-factors-model)
+  - [Factor Analysis with Neural Network](#factor-analysis-with-neural-network)
+    - [The Basic Idea](#the-basic-idea)
+    - [Train the Factors with Network](#train-the-factors-with-network)
+
+<!-- /TOC -->
 
 ## Things to do
 * Collecting assets' factor data. 
@@ -91,7 +115,7 @@ $$
 r_p = r_f + \beta(r_m - r_f) + \alpha
 $$
 ![picture 2](images/cd0738c26ee573634feb007939c2bfcb7d4134346ffeec6500959b4b99b67179.png)  
-So if the $R_p$ is above SML( eg. point B), that means the market accept a higher return associates with the market risk, then this security is undervalued. And if $r_p$ is under SML (eg. point A), that means the market accepts a small return associates with market risk.
+So if the $R_p$ is above SML( eg. point B), that means the market accept a higher return associates with the market risk, then this security is undervalued. And if $r_p$ is under SML (eg. point A), that means the market accepts a low return associates with market risk.
 ### Fama's 3 Factor Model
 From CAPM model's view, the return of a stock derives only from the market's return, or we can say that the market risk is the only risk. But  in 1993 Fama and French public another model which extends the CAPM introducing SMB and HML
 $$
@@ -99,23 +123,49 @@ R_p - R_f = \alpha_p + \beta (R_m - R_f) + b_s \cdot SMB + b_v \cdot HML + \epsi
 $$
 It is obviously a linear regression application. Comparing to CAPM, it introduces two new factors: SMB and HML.  
 * $\alpha_p$ : The excessive expcted return of the portfolio 
+* $\beta,b_s,b_v$: The weights of the factors which represent the sensitivities to these factors.
+* $R_m-R_f$: Expected excess return
+* SMB: Size premium. It is the the average return of the small market cap stocks minus the average return of big market cap stocks
+* HML: value premium. It is the average return of high book-cap ratio stocks minus the average return of look book-cap ratio stocks
 
-### APT Model
-The arbitrage pricing theory model.  
+### Carhart four-factor Model
+ 
 With factors, we can can calculate the risk exposure of a portfolio. It is very important to the investing. When I calculate the exposures to factors, I can collect securities with highly positive exposures to specific factors, and 
 $$
-R_p - R_f = a_p + b_{p1} RMRF + b_{p2} SMB + b_{p3}HML + b_{p4}WML + \epsilon_t
+R_p - R_f = a_p + \beta_{p1} (R_m - R_f) + \beta_{p2} SMB + \beta_{p3}HML + \beta_{p4}WML + \epsilon_t
 $$
 In this formula
-* $RMRF = R_m-R_f$ 
+* WML: Momentum factor, which is the average return of the winners minus the average return of the losers last year
 
-This model has a intersection item "$\alpha_p$" which represents the expectation return when other factors 
-
-
-
+Carhart 4 factor model and the 3 factor model both have intersection items "$\alpha_p$" which represent the expected return when $\beta$s are zeroes. So if I have a portfolio named A which is exposed to these 4 factors, also having an expected return $\alpha_p$. In the market, I can find many assets with which I build another portfolio named B follows:
+$$
+R_p' - R_f = \alpha_p' +  \beta_{p1} RMRF + \beta_{p2} SMB + \beta_{p3}HML + \beta_{p4}WML + \epsilon_t
+$$
+When $\alpha_p' < \alpha_p$, I can long the portfolio B and short the portfolio A, then I can get
+$$
+R = R_p' - R_p = \alpha_p' - \alpha_p
+$$
+It is the risk-free return because this new portfolio has no exposure to any risks. And this operation is called arbitrage. When this opportunity exists in the market, investors will do the arbitrage until the opportunity disappears.  
+So if the market is efficient, there is no arbitrage opportunity here.
+$$
+E(R_p - R_f) = \beta_{p1} RMRF + \beta_{p2} SMB + \beta_{p3}HML + \beta_{p4}WML
+$$
+### APT model
+So the arbitrage pricing theory model (APT model) is
+$$
+R_i = R_f + a_i + \beta_{i1}I_1 + \beta_{i2}I_2 + ... + \beta_{ik}I_K + \epsilon_i
+$$
+and when the market is efficient
+$$
+E(R_i) = R_f + \beta_{i1}I_1 + \beta_{i2}I_2 + ... + \beta_{ik}I_K
+$$
+### Multi Factors Model
 
 
 ## Factor Analysis with Neural Network
-I introduces some traditional models which needs us to design the factors, and train the model with linear regression. But the paper named "Risk Premia Investing in the Age of Machines" introduces another way to build the factor model.  
+### The Basic Idea
+I introduces some traditional models which needs us to design the factors, and train the model with linear regression.
+### Train the Factors with Network
+The paper named "Risk Premia Investing in the Age of Machines" introduces another way to build the factor model.  
 ![picture 1](images/59025ccb5e50ecbb82361dfdf152be75e216d33526aac3793a77db186ad02a39.png)  
 So in this model, I need to input the asset characteristics and their returns instead of designing the factor. There are two neuron networks, and one of them is to train the risk factor, and the other one is to train the risk exposure.
