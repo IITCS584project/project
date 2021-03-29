@@ -74,7 +74,7 @@ The linear regression is a classical method to analyze how to explain the price'
 ### CAPM
 For example, the classical CAPM model  
 $$
-E(r_p) = r_f + \beta(r_m - r_f)
+E(R_p) = R_f + \beta(R_m - R_f)
 $$
 The line represents this relationship is called Security Market Line(SML).  
 ![picture 1](images/2142d7517f72ae232926a1e9cf335c69cf7979478f5e3f24d97adad3726939cf.png)  
@@ -82,24 +82,42 @@ The line represents this relationship is called Security Market Line(SML).
 Apparently it is an application of linear regression. But how to do this regression in practice?  
 The factor analysis studies on the cross-section data, but the stock prices is a time series data. So I have price series of a stock and the price series of HS300 etf.
 $$
-E(r_p) = \alpha + \beta( r_m - r_f ) \\
-r_p = \frac{\Delta P_t^{stock}}{P_{t-1}^{stock}} - 1 \\
-r_m = \frac{\Delta P_t^{etf}}{P_{t-1}^{etf}} - 1 \\
+E(r_p) = \alpha + \beta( R_m - R_f ) \\
+
+R_p = \frac{\Delta P_t^{stock}}{P_{t-1}^{stock}} - 1 \\
+
+R_m = \frac{\Delta P_t^{etf}}{P_{t-1}^{etf}} - 1 \\
 $$
 So I can do the regression with a time period. If I find that:
 $$
 r_p = r_f + \beta(r_m - r_f) + \alpha
 $$
 ![picture 2](images/cd0738c26ee573634feb007939c2bfcb7d4134346ffeec6500959b4b99b67179.png)  
-So if the $r_p$ is above SML( eg. point B), that means the market accept a higher return associates with the market risk, then this security is undervalued. And if $r_p$ is under SML (eg. point A), that means the market accepts a small return associates with market risk.
+So if the $R_p$ is above SML( eg. point B), that means the market accept a higher return associates with the market risk, then this security is undervalued. And if $r_p$ is under SML (eg. point A), that means the market accepts a small return associates with market risk.
 ### Fama's 3 Factor Model
-From CAPM model's view, the return of a stock derives only from the market's return, or we can say that the market is the only risk. But  in 1993 Fama and French show another model which extends the CAPM introducing SMB and HML
+From CAPM model's view, the return of a stock derives only from the market's return, or we can say that the market risk is the only risk. But  in 1993 Fama and French public another model which extends the CAPM introducing SMB and HML
 $$
-r = R_f + \beta (R_m - R_f) + b_s \cdot SMB + b_v \cdot HML + \epsilon
+R_p - R_f = \alpha_p + \beta (R_m - R_f) + b_s \cdot SMB + b_v \cdot HML + \epsilon
 $$
 It is obviously a linear regression application. Comparing to CAPM, it introduces two new factors: SMB and HML.  
+* $\alpha_p$ : The excessive expcted return of the portfolio 
 
-### Multi Factors Model
+### APT Model
+The arbitrage pricing theory model.  
 With factors, we can can calculate the risk exposure of a portfolio. It is very important to the investing. When I calculate the exposures to factors, I can collect securities with highly positive exposures to specific factors, and 
+$$
+R_p - R_f = a_p + b_{p1} RMRF + b_{p2} SMB + b_{p3}HML + b_{p4}WML + \epsilon_t
+$$
+In this formula
+* $RMRF = R_m-R_f$ 
+
+This model has a intersection item "$\alpha_p$" which represents the expectation return when other factors 
+
+
+
+
 
 ## Factor Analysis with Neural Network
+I introduces some traditional models which needs us to design the factors, and train the model with linear regression. But the paper named "Risk Premia Investing in the Age of Machines" introduces another way to build the factor model.  
+![picture 1](images/59025ccb5e50ecbb82361dfdf152be75e216d33526aac3793a77db186ad02a39.png)  
+So in this model, I need to input the asset characteristics and their returns instead of designing the factor. There are two neuron networks, and one of them is to train the risk factor, and the other one is to train the risk exposure.
