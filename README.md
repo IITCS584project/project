@@ -82,11 +82,9 @@ The line represents this relationship is called Security Market Line(SML).
 Apparently it is an application of linear regression. But how to do this regression in practice?  
 The factor analysis studies on the cross-section data, but the stock prices is a time series data. So I have price series of a stock and the price series of HS300 etf.
 $$
-E(r_p) = \alpha + \beta( R_m - R_f ) \\
-
-R_p = \frac{\Delta P_t^{stock}}{P_{t-1}^{stock}} - 1 \\
-
-R_m = \frac{\Delta P_t^{etf}}{P_{t-1}^{etf}} - 1 \\
+E(r_p) = \alpha + \beta( R_m - R_f )  \\
+R_p = \frac{\Delta P_t^{stock}}{P_{t-1}^{stock}} - 1  \\
+R_m = \frac{\Delta P_t^{etf}}{P_{t-1}^{etf}} - 1 
 $$
 So I can do the regression with a time period. If I find that:
 $$
