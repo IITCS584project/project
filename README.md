@@ -95,6 +95,7 @@ $$
 ## Factor Analysis with Linear Regression
 
 The linear regression is a classical method to analyze how to explain the price's move with the factors. This method focuses on the cross-section data which means it doesn't care about the asset's price moves by the factor every day but only cares about how much the asset is exposed to a specific factor(risk).  
+It is a pricing model, so our goal is to predict the stock's future price.
 ### CAPM
 For example, the classical CAPM model  
 $$
@@ -166,6 +167,10 @@ $$
 ### The Basic Idea
 I introduces some traditional models which needs us to design the factors, and train the model with linear regression.
 ### Train the Factors with Network
-The paper named "Risk Premia Investing in the Age of Machines" introduces another way to build the factor model.  
 ![picture 1](images/59025ccb5e50ecbb82361dfdf152be75e216d33526aac3793a77db186ad02a39.png)  
-So in this model, I need to input the asset characteristics and their returns instead of designing the factor. There are two neuron networks, and one of them is to train the risk factor, and the other one is to train the risk exposure.
+This is the pricing model which means I need to predict the price precisely.
+
+The paper named "Risk Premia Investing in the Age of Machines" introduces another way to build the factor model.  
+
+So in this model, I need to input the asset characteristics and their returns instead of designing the factor. There are two neuron networks, and one of them is to train the risk factor, and the other one is to train the risk exposure.  
+
