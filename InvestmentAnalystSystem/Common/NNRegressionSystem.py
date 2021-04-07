@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-class StockRegressionSystem:
+class NNRegressionSystem:
     def __init__(self):
         self.mModel :nn.Module = None
         self.mOptimizer = None

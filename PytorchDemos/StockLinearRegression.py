@@ -30,4 +30,3 @@ class FactorLinearAnslysis:
             optimizer.step()
         pass
 
-def Main():

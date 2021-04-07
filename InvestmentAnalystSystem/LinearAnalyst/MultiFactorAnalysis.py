@@ -1,6 +1,11 @@
 
-from InvestmentAnalystSystem.Common.StockRegressionSystem import StockRegressionSystem
+from InvestmentAnalystSystem.Common.NNRegressionSystem import NNRegressionSystem
 from InvestmentAnalystSystem.LinearAnalyst.FactorLinearNN import FactorLinearNN
 
+def 
+
 def Main():
+    solver = NNRegressionSystem()
+    network = FactorLinearNN(3)
+
     pass
