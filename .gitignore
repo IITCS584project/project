@@ -1,5 +1,8 @@
 settings.json
+.DS_store
 *.csv
+*.pyc
 !/InvestmentAnalystSystem
 !/PytorchDemos
 !/Data
+

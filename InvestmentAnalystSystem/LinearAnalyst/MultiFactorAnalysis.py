@@ -2,7 +2,7 @@
 from InvestmentAnalystSystem.Common.NNRegressionSystem import NNRegressionSystem
 from InvestmentAnalystSystem.LinearAnalyst.FactorLinearNN import FactorLinearNN
 
-def 
+
 
 def Main():
     solver = NNRegressionSystem()
