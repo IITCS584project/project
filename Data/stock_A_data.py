@@ -28,6 +28,22 @@ class get_data_from_tushare():
         self.pro = ts.pro_api()
         self.data=''
         self.path=path+'/data_csv'
+
+    def write_detail_data_signle_ts(self,code):
+        df=ts.get_hist_data(code)
+        df['trade_date']=df.index
+        for i in range(0,df.shape[0]):
+            df.loc[df.iloc[i]['trade_date'],['trade_date']]=df.iloc[i]['trade_date'].replace("-",'')
+        df['ts_code']=code
+        df['pre_close']=0
+        df['change']=0
+        df['pct_chg']=0
+        df['vol']=df['volume']
+        df['amount']=0
+        df=df.reset_index()
+        df=df[['ts_code','trade_date','open','high','low','close','pre_close','change','pct_chg','vol','amount']]
+        df.to_csv(self.path+'/' + code + '.csv')
+        
     def get_stock_list(self):
         #获取标的物的列表
         self.data = self.pro.stock_basic(exchange='', list_status='L', fields='ts_code,symbol,name,area,industry,list_date')
@@ -121,24 +137,26 @@ class read_data():
 
 
 if __name__ == '__main__':
+    code=['sh','sz','hs300','sz50','zxb','cyb']
+    for r in code:
+        obj_=get_data_from_tushare()
+        obj_.write_detail_data_signle_ts(r)
+        # obj_read=read_data() #声明对象
+    # df=obj_read.get_daily_data_clac('000001.SZ',start_date=20200128,end_date=20210302)# 按照开始时间和结束时间取 000001.SZ这个标的物
 
-
-    obj_read=read_data() #声明对象
-    df=obj_read.get_daily_data_clac('000001.SZ',start_date=20200128,end_date=20210302)# 按照开始时间和结束时间取 000001.SZ这个标的物
-
-    taglist={}
-    #定义一个tag dict 增加自定义的分类标记,key的名称将会直接打在数据上
-    taglist['big_short']=Interval(float('-inf'),-3)# 将跌幅无穷到-3% 定义为大跌
-    taglist['small_short']=Interval(-3,-1)#将-3% 到-1% 定义为小跌
-    taglist['middle']=Interval(-1,1)
-    taglist['small_long']=Interval(1,3)
-    taglist['big_long']=Interval(3,float('inf'))
+    # taglist={}
+    # #定义一个tag dict 增加自定义的分类标记,key的名称将会直接打在数据上
+    # taglist['big_short']=Interval(float('-inf'),-3)# 将跌幅无穷到-3% 定义为大跌
+    # taglist['small_short']=Interval(-3,-1)#将-3% 到-1% 定义为小跌
+    # taglist['middle']=Interval(-1,1)
+    # taglist['small_long']=Interval(1,3)
+    # taglist['big_long']=Interval(3,float('inf'))
  
-    learn_tag_column='middle_rate_of_increase' # 选择根据要打标记的指标
-    #close_rate_of_increase=今日收盘价/昨天收盘价
-    #avg_rate_of_increase=今日四项平均值/昨日四项平均值
-    #open_today_rate_of_increase=今日收盘价／今日开盘价
-    #middle_rate_of_increase=「1/2(今日最高+今日最低)」/「1/2(昨日最高+昨日最低)」
+    # learn_tag_column='middle_rate_of_increase' # 选择根据要打标记的指标
+    # #close_rate_of_increase=今日收盘价/昨天收盘价
+    # #avg_rate_of_increase=今日四项平均值/昨日四项平均值
+    # #open_today_rate_of_increase=今日收盘价／今日开盘价
+    # #middle_rate_of_increase=「1/2(今日最高+今日最低)」/「1/2(昨日最高+昨日最低)」
 
-    res=obj_read.set_learn_tag(df,taglist,learn_tag_column) # 按middle_rate_of_increase 这个指标打标记，生成learn_tag标签，用于后续学习和分类
-    print(res)
+    # res=obj_read.set_learn_tag(df,taglist,learn_tag_column) # 按middle_rate_of_increase 这个指标打标记，生成learn_tag标签，用于后续学习和分类
+    # print(res)
