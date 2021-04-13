@@ -24,7 +24,7 @@ class read_data():
         self.path=path+'/data_csv'
 
 
-    def get_daily_data(self,code,start_date='',end_date='',distance=1):
+    def get_daily_data(self,code,start_date='',end_date='',distance=1,columns=''):
         
         # 读标的物列表
         # param  code  必填，标的物编码  e.g. 000001.SZ
@@ -44,7 +44,7 @@ class read_data():
         df['rate_of_increase']=((df['close']/df.shift(periods=1)['close'])-1)*100
         df=df[['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase']]
         
-        return df.values
+        return df.values if columns=='' else df[columns].values
             
     def get_stock_list(self):
 
@@ -84,7 +84,9 @@ if __name__ == '__main__':
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data() #声明对象
-    result=obj_read.get_daily_data('sh',start_date=20210405,end_date=20210412,distance=1)
+    result=obj_read.get_daily_data('sh',start_date=20210405,end_date=20210412,distance=2,columns=['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase'])
+    result=obj_read.get_daily_data('sh',start_date=20210405,end_date=20210412,distance=2,columns=['ts_code','trade_date','close','rate_of_increase'])
+
     # 按照开始时间和结束时间取 000001.SZ这个标的物,distance=n n代表返回日期间隔
     # 返回第1天一定是>=start_date的第一个交易日的日期数据
     # 按照distance的间隔，返回所有交易日内的间隔日期数据
