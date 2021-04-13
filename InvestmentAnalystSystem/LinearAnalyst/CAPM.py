@@ -43,6 +43,9 @@ class CAPM:
         self.mAssetTicker = asset_ticker
         self.mMarketYield = market_yield
         self.mAssetYield = asset_yield
+        # get the excess yield
+        market_yield = market_yield - rf
+        asset_yield = asset_yield - rf
         #normalzie the market yield and asset yield
         market_yield = (market_yield - np.mean(market_yield)) / np.std(market_yield)
         asset_yield = (asset_yield - np.mean(asset_yield)) / np.std(asset_yield)
@@ -77,7 +80,7 @@ def Main():
     capm.Init()
     asset_yield :np.array = capm.LoadData(asset_ticker, 20200305, 20200412, 1 )
     market_yield :np.array = capm.LoadData(market_ticker, 20200305, 20200412, 1)
-    capm.Fit(market_ticker, market_yield, asset_ticker, asset_yield)
+    capm.Fit(0.03, market_ticker, market_yield, asset_ticker, asset_yield)
     capm.Draw(plt)
     plt.show()
 
