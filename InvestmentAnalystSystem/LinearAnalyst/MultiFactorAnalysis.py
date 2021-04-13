@@ -1,6 +1,7 @@
 from InvestmentAnalystSystem.Common.NNRegressionSystem import NNRegressionSystem
 from InvestmentAnalystSystem.LinearAnalyst.FactorLinearNN import FactorLinearNN
 from Data.UseData import read_data
+from InvestmentAnalystSystem.Common.DrawFunctions import DrawLinearRegression
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -35,8 +36,16 @@ def Main():
     print(wmsj_ir)
     solver.Fit(hs300_ir, wmsj_ir,200)
     print("weights:")
+    args = [0,0]
+    param_idx = 0
     for name, param in model.named_parameters():
         print(name, param.item())
+        args[param_idx] = param.item()
+        param_idx += 1 
+
+    DrawLinearRegression(plt, hs300_ir.numpy(), wmsj_ir.numpy(), args[0], args[1], "CAPM", "HS300", "Perfect World")
+    plt.show()
+    
     #print(hs300_increaserate)
     #print(wmsj_increaserate)
 
