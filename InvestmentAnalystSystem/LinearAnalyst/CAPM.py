@@ -15,7 +15,7 @@ class CAPM:
     def Init(self):
         self.mSolver = NNRegressionSystem()
         self.mModel = FactorLinearNN(1)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.1)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.01)
         self.mLossFunc = nn.MSELoss()
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
         pass
@@ -30,8 +30,9 @@ class CAPM:
         reader = read_data()
         #market_yield = reader.get_daily_data(market_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code','trade_date','rate_of_increase'])
         #asset_yield = reader.get_daily_data(asset_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code','trade_date','rate_of_increase'])
-        asset_yield = reader.get_daily_data(asset_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['rate_of_increase'])
-        asset_yield = asset_yield[1:]
+        asset_yield = reader.get_daily_data(asset_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code', 'trade_date', 'rate_of_increase'])
+        # the first row is na
+        asset_yield = asset_yield[1:, 2]
         return asset_yield
 
     def Fit(self, rf, market_ticker, market_yield :np.array, asset_ticker, asset_yield :np.array):
@@ -47,15 +48,15 @@ class CAPM:
         market_yield = market_yield - rf
         asset_yield = asset_yield - rf
         #normalzie the market yield and asset yield
-        market_yield = (market_yield - np.mean(market_yield)) / np.std(market_yield)
-        asset_yield = (asset_yield - np.mean(asset_yield)) / np.std(asset_yield)
+        #market_yield = (market_yield - np.mean(market_yield)) / np.std(market_yield)
+        #asset_yield = (asset_yield - np.mean(asset_yield)) / np.std(asset_yield)
         # change them to torch tensor
         market_yield = torch.tensor(np.array(market_yield, dtype=float)).float()
         asset_yield = torch.tensor(np.array(asset_yield, dtype=float)).float()
         market_yield = market_yield.reshape((len(market_yield), 1))
         asset_yield = asset_yield.reshape((len(asset_yield),1))
 
-        self.mSolver.Fit(market_yield, asset_yield,200)
+        self.mSolver.Fit(market_yield, asset_yield,2000)
         pass
 
     def ExtractModelParameter(self):
@@ -74,13 +75,13 @@ class CAPM:
 
 
 def Main():
-    asset_ticker = '002624.sz'
+    asset_ticker = '600859.sh'
     market_ticker = 'hs300'
     capm = CAPM()
     capm.Init()
-    asset_yield :np.array = capm.LoadData(asset_ticker, 20200305, 20200412, 1 )
-    market_yield :np.array = capm.LoadData(market_ticker, 20200305, 20200412, 1)
-    capm.Fit(0.03, market_ticker, market_yield, asset_ticker, asset_yield)
+    asset_yield :np.array = capm.LoadData(asset_ticker, 20190305, 20200412, 5 )
+    market_yield :np.array = capm.LoadData(market_ticker, 20190305, 20200412, 5)
+    capm.Fit(3, market_ticker, market_yield, asset_ticker, asset_yield)
     capm.Draw(plt)
     plt.show()
 
