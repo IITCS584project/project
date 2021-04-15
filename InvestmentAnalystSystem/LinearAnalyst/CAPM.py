@@ -61,7 +61,7 @@ class CAPM:
         self.mMarketYield = market_yield
         self.mAssetYield = asset_yield
 
-        self.mSolver.Fit(market_yield, asset_yield,2000)
+        self.mSolver.Fit(market_yield, asset_yield,5000)
         pass
 
     def Summary(self):
