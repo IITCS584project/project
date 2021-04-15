@@ -8,8 +8,6 @@ import torch.optim as optim
 import numpy as np
 import matplotlib.pyplot as plt
 
-def ShowGraph(X, y):
-    pass
 
 def Main():
     solver = NNRegressionSystem()

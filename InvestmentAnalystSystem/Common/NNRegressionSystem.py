@@ -31,7 +31,7 @@ class NNRegressionSystem:
 
     def Predict(self, X):
         with torch.no_grad():
-        # forward pass
+            # forward pass
             pred = self.mModel(X)
             return pred
 

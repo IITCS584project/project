@@ -7,6 +7,7 @@ import torch.optim as optim
 from Data.UseData import read_data
 from InvestmentAnalystSystem.Common.DrawFunctions import DrawLinearRegression
 import matplotlib.pyplot as plt
+from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 
 class CAPM:
     def __init__(self):
@@ -40,10 +41,11 @@ class CAPM:
         fit the model
         rf: risk free rate
         '''
+        self.Init()
+
         self.mMarketTicker = market_ticker
         self.mAssetTicker = asset_ticker
-        self.mMarketYield = market_yield
-        self.mAssetYield = asset_yield
+        
         # get the excess yield
         market_yield = market_yield - rf
         asset_yield = asset_yield - rf
@@ -56,9 +58,21 @@ class CAPM:
         market_yield = market_yield.reshape((len(market_yield), 1))
         asset_yield = asset_yield.reshape((len(asset_yield),1))
 
+        self.mMarketYield = market_yield
+        self.mAssetYield = asset_yield
+
         self.mSolver.Fit(market_yield, asset_yield,2000)
         pass
 
+    def Summary(self):
+        # statistical summary of the CAPM
+        pred_assetyield = self.mSolver.Predict(self.mMarketYield)
+        market_yield = self.mMarketYield.numpy()
+        pred_assetyield = pred_assetyield.numpy()
+        r2 = UtilFuncs.R2(pred_assetyield, market_yield)
+        print("R2", r2)
+        pass
+    
     def ExtractModelParameter(self):
         args = [0,0]
         param_idx = 0
@@ -70,7 +84,7 @@ class CAPM:
 
     def Draw(self, plt):
         k,b = self.ExtractModelParameter()
-        DrawLinearRegression(plt, self.mMarketYield, self.mAssetYield, k, b, "CAPM", self.mMarketTicker, self.mAssetTicker)
+        DrawLinearRegression(plt, self.mMarketYield.numpy(), self.mAssetYield.numpy(), k, b, "CAPM", self.mMarketTicker, self.mAssetTicker)
         plt.show()
 
 
@@ -78,12 +92,12 @@ def Main():
     asset_ticker = '600859.sh'
     market_ticker = 'hs300'
     capm = CAPM()
-    capm.Init()
     asset_yield :np.array = capm.LoadData(asset_ticker, 20190305, 20200412, 5 )
     market_yield :np.array = capm.LoadData(market_ticker, 20190305, 20200412, 5)
     capm.Fit(3, market_ticker, market_yield, asset_ticker, asset_yield)
     capm.Draw(plt)
     plt.show()
+    capm.Summary()
 
 Main()
     
