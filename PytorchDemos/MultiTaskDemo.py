@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 用于训练
+# 多task NN
 
 import math
 
@@ -12,6 +12,7 @@ from torch.utils.data import Dataset, DataLoader
 
 
 def gen_data(N):
+    # 两个样本生成机制，k和b不一样
     X = np.random.randn(N, 1)
     w1 = 2.
     b1 = 8.
