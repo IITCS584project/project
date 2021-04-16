@@ -31,10 +31,10 @@ class CAPM:
         reader = read_data()
         #market_yield = reader.get_daily_data(market_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code','trade_date','rate_of_increase'])
         #asset_yield = reader.get_daily_data(asset_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code','trade_date','rate_of_increase'])
-        asset_yield = reader.get_daily_data(asset_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code', 'trade_date', 'rate_of_increase'])
+        yield_list = reader.get_daily_data(asset_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code', 'trade_date', 'rate_of_increase'])
         # the first row is na
-        asset_yield = asset_yield[1:, 2]
-        return asset_yield
+        yield_list = yield_list[:, 1:, 2]
+        return yield_list
 
     def Fit(self, rf, market_ticker, market_yield :np.array, asset_ticker, asset_yield :np.array):
         '''
@@ -53,8 +53,8 @@ class CAPM:
         #market_yield = (market_yield - np.mean(market_yield)) / np.std(market_yield)
         #asset_yield = (asset_yield - np.mean(asset_yield)) / np.std(asset_yield)
         # change them to torch tensor
-        market_yield = torch.tensor(np.array(market_yield, dtype=float)).float()
-        asset_yield = torch.tensor(np.array(asset_yield, dtype=float)).float()
+        market_yield = torch.from_numpy(np.array(market_yield, dtype=float)).float()
+        asset_yield = torch.from_numpy(np.array(asset_yield, dtype=float)).float()
         market_yield = market_yield.reshape((len(market_yield), 1))
         asset_yield = asset_yield.reshape((len(asset_yield),1))
 
@@ -89,11 +89,12 @@ class CAPM:
 
 
 def Main():
-    asset_ticker = '600859.sh'
+    asset_ticker = '600859.SH'
     market_ticker = 'hs300'
     capm = CAPM()
-    asset_yield :np.array = capm.LoadData(asset_ticker, 20190305, 20200412, 5 )
-    market_yield :np.array = capm.LoadData(market_ticker, 20190305, 20200412, 5)
+    data_list :np.array = capm.LoadData([asset_ticker, market_ticker], 20190305, 20200412, 5 )
+    asset_yield :np.array = data_list[0]
+    market_yield :np.array = data_list[1]
     capm.Fit(3, market_ticker, market_yield, asset_ticker, asset_yield)
     capm.Draw(plt)
     plt.show()
