@@ -15,27 +15,23 @@ class NNRegressionSystem:
 
     
     def Fit(self, X, y, epoch):
-        lastprint = ""
         for t in range(epoch):
             # clear gradient buffer
             self.mOptimizer.zero_grad()
             # forward pass
             y_pred = self.mModel(X)
             # calculate loss
-            loss = self.mLossFunc(y_pred, y)            
-            lastprint = str(t) + "\t" + str(loss.item())
-            print(lastprint, end="")
-            print("\b" * len(lastprint) * 2, end="", flush=True)
+            loss = self.mLossFunc(y_pred, y)
+            print(t, loss.item())
             # backward pass
             loss.backward()
             # apply the weights
             self.mOptimizer.step()
-        print("")
         pass
 
     def Predict(self, X):
         with torch.no_grad():
-            # forward pass
+        # forward pass
             pred = self.mModel(X)
             return pred
 
