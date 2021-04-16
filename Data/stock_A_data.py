@@ -137,10 +137,12 @@ class read_data():
 
 
 if __name__ == '__main__':
-    code=['sh','sz','hs300','sz50','zxb','cyb']
-    for r in code:
-        obj_=get_data_from_tushare()
-        obj_.write_detail_data_signle_ts(r)
+    # code=['sh','sz','hs300','sz50','zxb','cyb']
+    # for r in code:
+    #     obj_=get_data_from_tushare()
+    #     obj_.write_detail_data_signle_ts(r)
+    df=ts.get_deposit_rate()
+    print(df)
         # obj_read=read_data() #声明对象
     # df=obj_read.get_daily_data_clac('000001.SZ',start_date=20200128,end_date=20210302)# 按照开始时间和结束时间取 000001.SZ这个标的物
 
