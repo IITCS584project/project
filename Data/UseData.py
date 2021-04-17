@@ -24,23 +24,52 @@ class read_data():
     def __init__(self):
         self.path=path+'/data_csv'
 
-    def clac_macd(self,df):
+    def clac_tech_index(self,df):
         #增加EMA12列=前一日EMA（12）×11/13＋今日收盘价×2/13
         #增加EMA26列= 前一日EMA（26）×25/27＋今日收盘价×2/27
         #今日DIF=EMA12-EMA26
         #今日DEA value= 昨天 MACD*0.8+今日DIF*0.2
         #MACD=2*（今日DIF-今日DEA）
         #df = df.sort_values(["trade_date"], ascending=False)
-        df['EMA12']=df['close']
-        df['EMA26']=df['close']
+
+        #df['EMA12']=df['close']
+        #df['EMA26']=df['close']
+        #df['DIF']=df['EMA12']-df['EMA26']
+                
+        df.loc[0,'EMA12']=df.loc[0,'close']
+        df.loc[0,'EMA26']=df.loc[0,'close']
+        df.loc[0,'DEA']=0
+        for i in range(1,len(df)):
+            df.loc[i,'EMA12']=round(df.loc[i,'close']*2/13+df.loc[i-1,'EMA12']*11/13,2)
+            df.loc[i,'EMA26']=round(df.loc[i,'close']*2/27+df.loc[i-1,'EMA26']*25/27,2)
         df['DIF']=df['EMA12']-df['EMA26']
-        df['DEA'] = 0
-        df.EMA12[df.index<500]=df.shift(periods=-1)['EMA12']*11/13+df['close']*2/13
-        df.EMA26[df.index<500]=df.shift(periods=-1)['EMA26']*25/27+df['close']*2/27
-        df['DIF'] = df['EMA12'] - df['EMA26']
-        df.DEA[df.index<500] =df.shift(periods=-1)['DEA']*8/10+df['DIF']*2/10
+        
+        for i in range(1,len(df)):
+
+            df.loc[i,'DEA'] =round(df.loc[i-1,'DEA']*8/10+df.loc[i,'DIF']*2/10,2)
+        #df['dea_per']=df.shift(periods=1)['DEA']
         df['MACD'] = (df['DIF']- df['DEA'])*2
-        print(df[['trade_date','close','DIF','DEA','MACD']])
+        #sum(df.shift(periods=i)['close'])
+        
+
+        df['MA7']=df['close']
+        df['MA15']=df['close']
+        df['MA30']=df['close']
+        for i in range(6,len(df)):
+            for j in range(0,6):
+                df.loc[i,'MA7']+=df.loc[i-j,'close']
+            df.loc[i,'MA7']=df.loc[i,'MA7']/7
+        for i in range(14,len(df)):
+            for j in range(0,14):
+                df.loc[i,'MA15']+=df.loc[i-j,'close']
+            df.loc[i,'MA15']=df.loc[i,'MA15']/15
+        for i in range(29,len(df)):
+            for j in range(0,29):
+                df.loc[i,'MA30']+=df.loc[i-j,'close']
+            df.loc[i,'MA30']=df.loc[i,'MA30']/30
+
+        return df   
+
     def get_daily_data(self,codelist,start_date='',end_date='',distance=1,columns=''):
         
         # 读标的物列表
@@ -67,7 +96,7 @@ class read_data():
         for code in __code_list:
 
             df=pd.read_csv(self.path+"/"+code+".csv", sep=",")
-
+            
             df = df.loc[df["trade_date"] >= start_date] if start_date != '' else df
             df = df.loc[df["trade_date"] <= end_date] if end_date != '' else df # 截取日期片
             df=df.sort_values(["trade_date"],ascending=True) #重新排序
@@ -79,8 +108,10 @@ class read_data():
 
             df['rate_of_increase']=((df['close']/df.shift(periods=1)['close'])-1)*100
             df=df[['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase']]
+            df=self.clac_tech_index(df)
             res=df.values if columns=='' else df[columns].values
             res_list.append(res)
+
         return  np.array(res_list)
 
     def get_stock_list(self):
@@ -111,7 +142,6 @@ class read_data():
         df = df.loc[df["trade_date"] >= start_date] if start_date != '' else df
         df = df.loc[df["trade_date"] <= end_date] if end_date != '' else df
         return df
-        return df
 
 
 
@@ -122,13 +152,15 @@ if __name__ == '__main__':
 
     obj_read=read_data() #声明对象
     #result=obj_read.get_daily_data('sh',start_date=20210405,end_date=20210412,distance=2,columns=['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase'])
-    result=obj_read.get_daily_data(codelist=[],start_date=20210405,end_date=20210412,distance=2,columns=['ts_code','trade_date','close','rate_of_increase'])
+    result=obj_read.get_daily_data(codelist=['sh'],start_date=20200101,end_date=20210412,distance=1)
+    
     # code 传入一个list, list内如果有data set 以外的code 返回错误 | 如果传入不是 list格式 ，返回错误  | 如果传入空list 返回所有已有数据股票的内容
     # 按照开始时间和结束时间取 000001.SZ这个标的物,distance=n n代表返回日期间隔
     # 返回第1天一定是>=start_date的第一个交易日的日期数据
     # 按照distance的间隔，返回所有交易日内的间隔日期数据
-    print(result)
-
+    
+    #2021-04-17
+    #Index(['ts_code', 'trade_date', 'open', 'high', 'low', 'close', 'change','vol', 'amount', 'rate_of_increase', 'EMA12', 'EMA26', 'DEA', 'DIF','MACD', 'MA7', 'MA15', 'MA30'],
 
 
 
