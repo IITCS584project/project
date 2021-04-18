@@ -21,7 +21,7 @@ class CAPM:
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
         pass
 
-    def LoadData( self, asset_ticker, begin_date, end_date, distance):
+    def LoadData( self, code_list, begin_date, end_date, distance):
         '''
         anallyze by CAPM
         e.g. market_ticker='hs300', asset_ticker='002624.sz'
@@ -31,7 +31,7 @@ class CAPM:
         reader = read_data()
         #market_yield = reader.get_daily_data(market_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code','trade_date','rate_of_increase'])
         #asset_yield = reader.get_daily_data(asset_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code','trade_date','rate_of_increase'])
-        yield_list = reader.get_daily_data(asset_ticker,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code', 'trade_date', 'rate_of_increase'])
+        yield_list = reader.get_daily_data(code_list,start_date=begin_date,end_date=end_date,distance=distance,columns=['ts_code', 'trade_date', 'rate_of_increase'])
         # the first row is na
         yield_list = yield_list[:, 1:, 2]
         return yield_list
