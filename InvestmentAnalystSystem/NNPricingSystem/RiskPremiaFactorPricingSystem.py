@@ -11,9 +11,13 @@ from InvestmentAnalystSystem.Common.DrawFunctions import DrawLinearRegression
 import matplotlib.pyplot as plt
 
 
-class NNPricingModel:
+class RiskPremiaNNPricingSystem:
     def __init__(self):
-        # 
+        self.mSolver = NNRegressionSystem()
+        self.mModel = FactorLinearNN(1)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.01)
+        self.mLossFunc = nn.MSELoss()
+        self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
         pass
 
     def LoadData(self, asset_tickerlist):
@@ -23,8 +27,6 @@ class NNPricingModel:
 
     def Fit(self):
         model = RiskPremiaNNPricingModel()
-
-
         solver = NNRegressionSystem()
         solver.Init()
         pass

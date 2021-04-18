@@ -52,7 +52,7 @@ def Accuracy(pred, true_y):
     print(correct_num)
 
 def Main():
-    X, y = GenSamples(3, 2000)
+    X, y = GenSamples(3, 500)
     X_train, y_train, X_test, y_test = Split(X,y)
     solver = NNRegressionSystem()
     model = TorchNN()
@@ -60,8 +60,8 @@ def Main():
     optimizer = optim.SGD(model.parameters(), lr=1)
     solver.Init(model, optimizer, loss_func)
     solver.Fit(X_train, y_train, 10000)
-    pred_y = solver.Predict(X_train)
-    Accuracy(pred_y, y_train)
+    pred_y = solver.Predict(X_test)
+    Accuracy(pred_y, y_test)
 
     pass
 

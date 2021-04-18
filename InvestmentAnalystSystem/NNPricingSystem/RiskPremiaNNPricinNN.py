@@ -2,14 +2,14 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-class RiskPremiaNNPricingModel(nn.Module):
+class RiskPremiaNNPricingNN(nn.Module):
     def __init__(self, characteristic_num :int, asset_num :int, factor_num :int):
-        super(NNPricingModel, self).__init__()
+        super(RiskPremiaNNPricingNN, self).__init__()
         # graph 1:training for betas
         # hidden layer 1: (characteristic_num, characteristic_num * 2)
         self.mBetaLayer = nn.Sequential(
-            nn.Linear(characteristic_num, characteristic_num * 2)
-            nn.ReLU()
+            nn.Linear(characteristic_num, characteristic_num * 2),
+            nn.ReLU(),
             nn.Linear(characteristic_num * 2, factor_num )
         )
         # graph 2: training for factors
