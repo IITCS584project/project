@@ -36,13 +36,7 @@ def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'
     solver = GaussianNaiveBayesMethod()    
-    #market_data = solver.LoadData([market_ticker], 20190304, 20200409, 1, ['ts_code', 'trade_date','rate_of_increase'])
-    #stock_data = solver.LoadData([stock_ticker], 20190305, 20200410, 1, ['ts_code', 'trade_date','rate_of_increase'])
-    #X = market_data[0, :, 2]
-    #X = X.reshape((len(X),1))
-    #y = stock_data[0, :, 2]
-
-    X, y = StockDataProvider.GetStockDataForPredict()
+    X, y = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20190305, 20200410)
     y = CalcPredictResult(y)
     X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
     solver.Fit(X_train,y_train)
