@@ -3,9 +3,13 @@ import numpy as np
 
 class StockDataProvider:
     @staticmethod
-    def GetStockData( asset_ticker, market_ticker, start_date, end_date, distance ):
+    def GetStockDataForPredict( asset_ticker, market_ticker, start_date, end_date ):
         reader = read_data()
-        asset_data = reader.get_daily_data( [asset_ticker] ,start_date, end_date, distance,['rate_of_increase','vol'])
-        # the first row of yield is na
-        stock_data = asset_data[:, 1:]
-        pass
+        today_data = reader.get_daily_data( [asset_ticker] ,start_date, end_date, 1,['ts_code', 'trade_date', 'rate_of_increase'])
+        yesterday_data = reader.get_daily_data( [asset_ticker] ,start_date, end_date, 1,['vol'])
+        # remove 1st row 
+        today_data = today_data[1:]
+        yesterday_data = yesterday_data[:-1,:]
+        stock_data = np.concatenate([today_data, yesterday_data], axis=1)
+        return stock_data
+    

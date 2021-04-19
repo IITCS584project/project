@@ -29,6 +29,6 @@ class MultiFactorSystem:
         yield_list = yield_list[:, 1:, :]
         return yield_list
 
-    def Fit(self, input_X, true_y):
-
+    def Fit(self, X, y):
+        self.mSolver.Fit(X, y, 500)
         pass

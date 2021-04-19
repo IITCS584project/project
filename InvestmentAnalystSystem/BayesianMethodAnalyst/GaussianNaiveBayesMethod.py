@@ -3,6 +3,7 @@ from sklearn.naive_bayes import GaussianNB
 from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcPredictResult
 from Data.UseData import read_data
 from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
+from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
 class GaussianNaiveBayesMethod:
     def __init__(self):
         self.mClf = None
