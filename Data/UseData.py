@@ -10,6 +10,7 @@ import json
 import pandas as pd
 import os
 import numpy as np
+import fnmatch
 #显示所有列
 pd.set_option('display.max_columns', None)
 #显示所有行
@@ -35,7 +36,6 @@ class read_data():
         #df['EMA12']=df['close']
         #df['EMA26']=df['close']
         #df['DIF']=df['EMA12']-df['EMA26']
-                
         df.loc[0,'EMA12']=df.loc[0,'close']
         df.loc[0,'EMA26']=df.loc[0,'close']
         df.loc[0,'DEA']=0
@@ -48,10 +48,7 @@ class read_data():
         for i in range(1,len(df)):
 
             df.loc[i,'DEA'] =round(df.loc[i-1,'DEA']*8/10+df.loc[i,'DIF']*2/10,2)
-        #df['dea_per']=df.shift(periods=1)['DEA']
-        df['MACD'] = (df['DIF']- df['DEA'])*2
-        #sum(df.shift(periods=i)['close'])
-        
+        df['MACD']  =round((df['DIF']- df['DEA'])*2,2)
 
         df['MA7']=df['close']
         df['MA15']=df['close']
@@ -68,8 +65,7 @@ class read_data():
             for j in range(0,29):
                 df.loc[i,'MA30']+=df.loc[i-j,'close']
             df.loc[i,'MA30']=df.loc[i,'MA30']/30
-
-        return df   
+        return df
 
     def get_daily_data(self,codelist,start_date='',end_date='',distance=1,columns=''):
         
@@ -79,13 +75,13 @@ class read_data():
         # param  code  不必填，结束时间，没填写的时候，直到取最晚，开始结束都没填写的时候取全部
         __code_list=[]
         #如果传入的code不是list ,直接异常
-        if type(codelist) == []:
-            return 'code is need list type, your  parameter is '+str(type(codelist))
+        if type(codelist) != type([]):
+            return (False,'code is need list type, your  parameter is '+str(type(codelist)),None)
         stock_list=self.get_stock_list()
         #如果传入的code 有不在范围内的，直接异常
         for code in codelist:
             if code not in stock_list['ts_code'].tolist():
-                return 'code '+str(code)+' not in datalist'
+                return (False,'code '+str(code)+' not in datalist',None)
             else:
                 __code_list.append(code)
         #如果不传入指定code，使用全部
@@ -97,23 +93,37 @@ class read_data():
         for code in __code_list:
 
             df=pd.read_csv(self.path+"/"+code+".csv", sep=",")
-            
+
+            n=[]#需要收益率的list
+            if columns!='':
+                for str_ in columns:
+                    if fnmatch.fnmatch(str_, 'rate_of_increase_*'):
+                        n.append(int(str_.split('_')[-1]))
+            #此时n应该为一个list  ,ex：[4,5,6]要计算的n日累计涨幅
+            for x in n:
+                df['rate_of_increase_' + str(x)] = round(((df['close'] / df.shift(periods=-x)['close']) - 1) * 100,3)
+            #为df增加每个n日涨幅列
+
             df = df.loc[df["trade_date"] >= start_date] if start_date != '' else df
             df = df.loc[df["trade_date"] <= end_date] if end_date != '' else df # 截取日期片
-            df=df.sort_values(["trade_date"],ascending=True) #重新排序
-            df=df.reset_index() # 重新定义索引
+            df=df.sort_values(["trade_date"],ascending=True) #重新排序 时间从上到下，变为从早到晚
 
+            df=df.reset_index(drop=True) # 重新定义索引
+
+            df = self.clac_tech_index(df) # 增加计算指标
             for i in df.index:
                 if i%distance!=0: #用index 取余 distance，余0返回，其他去掉
                     df.drop(index=i,inplace=True)
-            df.reset_index(inplace=True)
-            df['rate_of_increase']=((df['close']/df.shift(periods=1)['close'])-1)*100
-            df=df[['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase']]
-            df=self.clac_tech_index(df)
+
+
+
+            df.drop(columns=['Unnamed: 0'],inplace=True) # 文件内带有默认数字列，特定为了删除这个
             res=df.values if columns=='' else df[columns].values
             res_list.append(res)
 
-        return  np.array(res_list)
+        #返回的时候判断特定值是不是有none，有就带上false
+        res= (True,'',np.array(res_list)) if sum(df.isna().sum().to_list())==0 else  (False,'contains nan',np.array(res_list))
+        return res
 
     def get_stock_list(self):
 
@@ -152,8 +162,8 @@ if __name__ == '__main__':
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data() #声明对象
-    result=obj_read.get_daily_data('sh',start_date=20210405,end_date=20210412,distance=2,columns=['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase'])
-   # result=obj_read.get_daily_data(codelist=['sh'],start_date=20200101,end_date=20210412,distance=1)
+    result=obj_read.get_daily_data(codelist=['sh'],start_date=20100405,end_date=20210412,distance=101,columns=['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase_4','rate_of_increase_5','rate_of_increase_7'])
+    #result = obj_read.get_daily_data(codelist=['sh'], start_date=20210405, end_date=20210412, distance=1)
 
     print(result)
     # code 传入一个list, list内如果有data set 以外的code 返回错误 | 如果传入不是 list格式 ，返回错误  | 如果传入空list 返回所有已有数据股票的内容
@@ -163,6 +173,6 @@ if __name__ == '__main__':
     
     #2021-04-17
     #Index(['ts_code', 'trade_date', 'open', 'high', 'low', 'close', 'change','vol', 'amount', 'rate_of_increase', 'EMA12', 'EMA26', 'DEA', 'DIF','MACD', 'MA7', 'MA15', 'MA30'],
-
+    #Index(['ts_code', 'trade_date', 'open', 'high', 'low', 'close', 'change','vol', 'amount', 'rate_of_increase_4', 'rate_of_increase_5','rate_of_increase_7']
 
 
