@@ -44,5 +44,5 @@ class UtilFuncs:
 
     @staticmethod
     def Normalize( X :np.array):
-        return X - X.min() / X.max() - X.min()
+        return (X - X.min(0)) / X.ptp(0)
         

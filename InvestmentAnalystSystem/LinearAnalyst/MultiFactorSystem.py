@@ -17,7 +17,7 @@ class MultiFactorSystem:
     def Init(self, feature_num :int):
         self.mSolver = NNRegressionSystem()
         self.mModel = FactorLinearNN(feature_num)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.001)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.01)
         self.mLossFunc = nn.MSELoss()
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
         pass

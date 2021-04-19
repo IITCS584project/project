@@ -42,11 +42,7 @@ def Main():
     solver.Fit(X_train,y_train)
     pred_y = solver.Predict(X_test)
     accuracy = solver.Accuracy(pred_y, y_test)
-    print(accuracy)
-    
-
-
-    
+    print(accuracy)    
     pass
 
 Main()

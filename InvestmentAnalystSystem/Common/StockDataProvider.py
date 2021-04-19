@@ -13,7 +13,7 @@ class StockDataProvider:
         yield_data = asset_data[0,1:, 2]        
         # remove the last row,I use the chracteristics of yesterday to predict today's price
         yesterday_data = asset_data[0, :-1,3:]
-        yesterday_data[0] = UtilFuncs.Normalize(yesterday_data[0])
+        yesterday_data[:, 0] = UtilFuncs.Normalize(yesterday_data[:,0])
         # use the market data of yesterday to predict today's price
         market_data = asset_data[1, :-1, 2]
         market_data = market_data.reshape((len(market_data),1))
@@ -24,5 +24,4 @@ class StockDataProvider:
 
     @staticmethod
     def NpArrayToTensor(X):
-        return torch.from_numpy(np.array(X, dtype=float)).float()
-        
+        return torch.from_numpy(np.array(X, dtype=float)).float()        
