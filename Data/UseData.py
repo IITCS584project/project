@@ -40,6 +40,7 @@ class read_data():
         df.loc[0,'EMA26']=df.loc[0,'close']
         df.loc[0,'DEA']=0
         for i in range(1,len(df)):
+
             df.loc[i,'EMA12']=round(df.loc[i,'close']*2/13+df.loc[i-1,'EMA12']*11/13,2)
             df.loc[i,'EMA26']=round(df.loc[i,'close']*2/27+df.loc[i-1,'EMA26']*25/27,2)
         df['DIF']=df['EMA12']-df['EMA26']
@@ -105,7 +106,7 @@ class read_data():
             for i in df.index:
                 if i%distance!=0: #用index 取余 distance，余0返回，其他去掉
                     df.drop(index=i,inplace=True)
-
+            df.reset_index(inplace=True)
             df['rate_of_increase']=((df['close']/df.shift(periods=1)['close'])-1)*100
             df=df[['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase']]
             df=self.clac_tech_index(df)
@@ -151,9 +152,10 @@ if __name__ == '__main__':
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data() #声明对象
-    #result=obj_read.get_daily_data('sh',start_date=20210405,end_date=20210412,distance=2,columns=['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase'])
-    result=obj_read.get_daily_data(codelist=['sh'],start_date=20200101,end_date=20210412,distance=1)
-    
+    result=obj_read.get_daily_data('sh',start_date=20210405,end_date=20210412,distance=2,columns=['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase'])
+   # result=obj_read.get_daily_data(codelist=['sh'],start_date=20200101,end_date=20210412,distance=1)
+
+    print(result)
     # code 传入一个list, list内如果有data set 以外的code 返回错误 | 如果传入不是 list格式 ，返回错误  | 如果传入空list 返回所有已有数据股票的内容
     # 按照开始时间和结束时间取 000001.SZ这个标的物,distance=n n代表返回日期间隔
     # 返回第1天一定是>=start_date的第一个交易日的日期数据
