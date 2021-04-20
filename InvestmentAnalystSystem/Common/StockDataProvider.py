@@ -29,8 +29,8 @@ class StockDataProvider:
     
     @staticmethod
     def DummyGenerateStockData(sample_num):
-        X = np.random.rand(sample_num, 3)
-        np.range()
-        X = X+1
-        y = 2 * X[:, 0] + 3 * X[:, 1] + 4 * X[:,2] + 5
+        X = np.array(range(10)) + 0.0
+        y = 2 * X + 5.0
+        X += np.random.rand() - 0.5      
+        X = X.reshape((len(X),1))  
         return X, y
