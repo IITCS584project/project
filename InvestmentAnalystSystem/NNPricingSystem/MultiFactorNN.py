@@ -10,11 +10,13 @@ class MultiFactorNN(nn.Module):
 
     def Init(self, feature_num):
         self.mFactorLayer = nn.Sequential(
-            nn.Linear(feature_num, feature_num * 2),
+            nn.Linear(feature_num, 20),
+            nn.Tanh(),
+            nn.Linear(20, 20),
             nn.ReLU(),
-            nn.Linear(feature_num * 2, feature_num * 2),
+            nn.Linear(20, 10),
             nn.ReLU(),
-            nn.Linear(feature_num * 2, 1 )
+            nn.Linear(10, 1 )
         )
     
     def forward(self, x):

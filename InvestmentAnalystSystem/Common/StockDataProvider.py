@@ -8,11 +8,12 @@ class StockDataProvider:
     def GetStockDataForPredict( asset_ticker, market_ticker, start_date, end_date ):
         reader = read_data()
         succ, info, asset_data = reader.get_daily_data( [asset_ticker, market_ticker] ,start_date, end_date, 1,
-                    ['ts_code', 'trade_date', 'rate_of_increase_1', 'vol'])        
+                    ['ts_code', 'trade_date', 'rate_of_increase_1', 'vol', 'rate_of_increase_7'])
         # remove the 1st row
         yield_data = asset_data[0,1:, 2]        
         # remove the last row,I use the chracteristics of yesterday to predict today's price
         yesterday_data = asset_data[0, :-1,3:]
+        # normalize vol
         yesterday_data[:, 0] = UtilFuncs.Normalize(yesterday_data[:,0])
         # use the market data of yesterday to predict today's price
         market_data = asset_data[1, :-1, 2]
@@ -24,4 +25,11 @@ class StockDataProvider:
 
     @staticmethod
     def NpArrayToTensor(X):
-        return torch.from_numpy(np.array(X, dtype=float)).float()        
+        return torch.from_numpy(np.array(X, dtype=float)).float()
+    
+    @staticmethod
+    def DummyGenerateStockData(sample_num, feature_num):
+        X = np.random.rand(sample_num, feature_num)
+        X = X+1
+        y = 2 * X + 5
+        return X, y
