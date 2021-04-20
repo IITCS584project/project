@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 class NNRegressionSystem:
     def __init__(self):
         self.mModel :nn.Module = None
@@ -46,4 +47,20 @@ class NNRegressionSystem:
         total_loss = loss.item()
         return total_loss
     
+    def ExtractModelParameter(self):
+        
+        total_params = []
+        for name, parameter in self.mModel.named_parameters():
+            if not parameter.requires_grad: continue
+            param = parameter.numel()
+            print(name, param)
+            total_params.append([name,param])
+        
+        return total_params
+
+    def Draw(self, plt):
+        #k,b = self.ExtractModelParameter()
+        #DrawLinearRegression(plt, self.mMarketYield.numpy(), self.mAssetYield.numpy(), k, b, "CAPM", self.mMarketTicker, self.mAssetTicker)
+        #plt.show()
+        pass
 

@@ -28,8 +28,9 @@ class StockDataProvider:
         return torch.from_numpy(np.array(X, dtype=float)).float()
     
     @staticmethod
-    def DummyGenerateStockData(sample_num, feature_num):
-        X = np.random.rand(sample_num, feature_num)
+    def DummyGenerateStockData(sample_num):
+        X = np.random.rand(sample_num, 3)
+        np.range()
         X = X+1
-        y = 2 * X + 5
+        y = 2 * X[:, 0] + 3 * X[:, 1] + 4 * X[:,2] + 5
         return X, y

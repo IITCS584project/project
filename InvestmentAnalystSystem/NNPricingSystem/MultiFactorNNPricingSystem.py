@@ -53,12 +53,13 @@ def Main():
     pass
 
 def Main2():
-    X, y = StockDataProvider.DummyGenerateStockData(100, 3)
+    X, y = StockDataProvider.DummyGenerateStockData(100)
     solver = MultiFactorNNPricingSystem()
     X = StockDataProvider.NpArrayToTensor(X)
     y = StockDataProvider.NpArrayToTensor(y)
     X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
     solver.Fit(X_train,y_train)
+    
     pred_y = solver.Predict(X_train)
     accuracy = solver.Accuracy(pred_y.T, y_train)
     print(accuracy)

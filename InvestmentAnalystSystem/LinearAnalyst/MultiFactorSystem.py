@@ -36,6 +36,9 @@ class MultiFactorSystem:
         true_y = CalcPredictResult(true_y)
         return (pred_y == true_y).sum() / len(true_y)
 
+    def ShowParameters(self):
+        self.mSolver.ExtractModelParameter()
+
 def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'
@@ -50,4 +53,16 @@ def Main():
     print(accuracy)
     pass
 
-Main()
+def Main2():
+    X, y = StockDataProvider.DummyGenerateStockData(100)
+    solver = MultiFactorSystem()
+    X = StockDataProvider.NpArrayToTensor(X)
+    y = StockDataProvider.NpArrayToTensor(y)
+    X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
+    solver.Fit(X_train,y_train)
+    solver.ShowParameters()
+    #pred_y = solver.Predict(X_train)
+    #accuracy = solver.Accuracy(pred_y.T, y_train)
+    #print(accuracy)
+
+Main2()
