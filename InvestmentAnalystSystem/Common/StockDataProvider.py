@@ -19,7 +19,7 @@ class StockDataProvider:
         market_data = asset_data[1, :-1, 2]
         market_data = market_data.reshape((len(market_data),1))
         X = np.concatenate([yesterday_data, market_data], axis=1)
-        y = yield_data
+        y = yield_data.reshape((len(yield_data), 1))
         return X, y
     
 
@@ -31,6 +31,7 @@ class StockDataProvider:
     def DummyGenerateStockData(sample_num):
         X = np.array(range(10)) + 0.0
         y = 2 * X + 5.0
-        X += np.random.rand() - 0.5      
+        #X += np.random.rand() - 0.5      
         X = X.reshape((len(X),1))  
+        y = y.reshape((len(y),1))
         return X, y

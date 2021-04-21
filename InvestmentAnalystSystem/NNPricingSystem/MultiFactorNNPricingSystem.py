@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
+import matplotlib.pyplot as plt
 
 class MultiFactorNNPricingSystem:
     def __init__(self):
@@ -19,6 +20,7 @@ class MultiFactorNNPricingSystem:
         self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.1, momentum=0.9)
         self.mLossFunc = nn.MSELoss()
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
+        
         
 
     def Fit(self, X,y):
@@ -37,6 +39,11 @@ class MultiFactorNNPricingSystem:
         true_y = CalcPredictResult(true_y)
         return (pred_y == true_y).sum() / len(true_y)
 
+    def ShowParameters(self, plt):
+        self.mSolver.ShowParameters()
+        self.mSolver.Draw(plt)
+        plt.show()
+
 
 def Main():
     market_ticker = 'hs300'
@@ -47,11 +54,13 @@ def Main():
     y = StockDataProvider.NpArrayToTensor(y)
     X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
     solver.Fit(X_train,y_train)
-    pred_y = solver.Predict(X_train)
-    accuracy = solver.Accuracy(pred_y.T, y_train)
-    print(accuracy)
-    pass
+    solver.ShowParameters(plt)
 
+    pred_y = solver.Predict(X_test)
+    accuracy = solver.Accuracy(pred_y, y_test)
+    print("accuracy", accuracy)
+    pass
+'''
 def Main2():
     X, y = StockDataProvider.DummyGenerateStockData(100)
     solver = MultiFactorNNPricingSystem()
@@ -59,9 +68,10 @@ def Main2():
     y = StockDataProvider.NpArrayToTensor(y)
     X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
     solver.Fit(X_train,y_train)
-    
-    pred_y = solver.Predict(X_train)
-    accuracy = solver.Accuracy(pred_y.T, y_train)
+    solver.ShowParameters(plt)
+    pred_y = solver.Predict(X_test)
+    accuracy = solver.Accuracy(pred_y, y_test)
     print(accuracy)
+'''
 
-Main2()
+Main()

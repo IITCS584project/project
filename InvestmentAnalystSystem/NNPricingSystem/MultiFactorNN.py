@@ -13,11 +13,18 @@ class MultiFactorNN(nn.Module):
             nn.Linear(feature_num, 20),
             nn.Tanh(),
             nn.Linear(20, 20),
-            nn.ReLU(),
+            nn.Sigmoid(),
             nn.Linear(20, 10),
             nn.ReLU(),
             nn.Linear(10, 1 )
         )
+        
+        #self.mFactorLayer.apply(self.InitWeights)
+
+    def InitWeights(self, m):
+        if type(m) == nn.Linear:
+            #m.weight.data.fill_(1.0)
+            print(m.weight)
     
     def forward(self, x):
         return self.mFactorLayer(x)

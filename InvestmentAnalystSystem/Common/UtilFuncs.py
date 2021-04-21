@@ -45,4 +45,13 @@ class UtilFuncs:
     @staticmethod
     def Normalize( X :np.array):
         return (X - X.min(0)) / X.ptp(0)
+
+
+    @staticmethod
+    def OneHotEncode( y :np.array):
+        '''
+        y : int array
+        '''
+        
+    
         
