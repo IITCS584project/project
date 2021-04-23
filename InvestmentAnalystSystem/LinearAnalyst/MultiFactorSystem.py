@@ -39,6 +39,7 @@ class MultiFactorSystem:
     def ShowParameters(self):
         self.mSolver.ShowParameters()
 
+
 def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'

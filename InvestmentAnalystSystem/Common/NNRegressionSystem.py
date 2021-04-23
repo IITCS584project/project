@@ -54,9 +54,11 @@ class NNRegressionSystem:
     
     def ShowParameters(self):
         kv_map = self.mModel.state_dict()
+        result_map = {}
         for k, v in kv_map.items():
             print(k, v.numpy())
-        
+            result_map[k] = v.numpy()
+        return result_map
 
     def Draw(self, plt):
         #k,b = self.ExtractModelParameter()
