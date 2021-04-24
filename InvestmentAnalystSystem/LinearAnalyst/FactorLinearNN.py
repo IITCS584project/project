@@ -10,5 +10,6 @@ class FactorLinearNN(nn.Module):
         self.fc1 = nn.Linear(feature_num, 1)
 
     def forward(self, x):
-        return self.fc1(x)
+        fc1 = self.fc1(x)
+        return fc1
 

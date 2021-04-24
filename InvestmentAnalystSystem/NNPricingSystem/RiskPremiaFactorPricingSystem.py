@@ -22,18 +22,13 @@ class RiskPremiaNNPricingSystem:
         self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.01)
         self.mLossFunc = nn.MSELoss()
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
-    
 
-    def LoadData(self, asset_tickerlist):
-        reader = read_data()
-        
+    def Fit(self, X, y):
+        X_Characteristic = X[0]
+        X_AssetRet = X[1]
+        self.Init(X_Characteristic.shape[1], len(X_AssetRet), 5)
         pass
 
-    def Fit(self):
-        model = RiskPremiaNNPricingModel()
-        solver = NNRegressionSystem()
-        solver.Init()
-        pass
-
-
+def Main():
+    pass
     

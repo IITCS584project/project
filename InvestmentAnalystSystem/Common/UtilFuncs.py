@@ -41,3 +41,17 @@ class UtilFuncs:
         y_train = y[indices[:end_idx]]
         y_test = y[indices[end_idx:]]        
         return X_train,y_train, X_test, y_test
+
+    @staticmethod
+    def Normalize( X :np.array):
+        return (X - X.min(0)) / X.ptp(0)
+
+
+    @staticmethod
+    def OneHotEncode( y :np.array):
+        '''
+        y : int array
+        '''
+        
+    
+        
