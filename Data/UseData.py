@@ -95,13 +95,18 @@ class read_data():
             df=pd.read_csv(self.path+"/"+code+".csv", sep=",")
 
             n=[]#需要收益率的list
+            m=[]#需要计算当日到未来收益率的list
             if columns!='':
                 for str_ in columns:
                     if fnmatch.fnmatch(str_, 'rate_of_increase_*'):
                         n.append(int(str_.split('_')[-1]))
+                    if fnmatch.fnmatch(str_, 'rate_of_increase_next_*'):
+                        m.append(int(str_.split('_')[-1]))
             #此时n应该为一个list  ,ex：[4,5,6]要计算的n日累计涨幅
             for x in n:
                 df['rate_of_increase_' + str(x)] = round(((df['close'] / df.shift(periods=-x)['close']) - 1) * 100,3)
+            for x in m:
+                df['rate_of_increase_next_' + str(x)] = round((( df.shift(periods=x)['close'] / df['close']) - 1) * 100,3)
             #为df增加每个n日涨幅列
 
             df = df.loc[df["trade_date"] >= start_date] if start_date != '' else df
@@ -118,6 +123,7 @@ class read_data():
 
 
             df.drop(columns=['Unnamed: 0'],inplace=True) # 文件内带有默认数字列，特定为了删除这个
+            
             res=df.values if columns=='' else df[columns].values
             res_list.append(res)
 
@@ -162,7 +168,7 @@ if __name__ == '__main__':
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data() #声明对象
-    result=obj_read.get_daily_data(codelist=['sh'],start_date=20100405,end_date=20210412,distance=101,columns=['ts_code','trade_date','open','high','low','close','change','vol','amount','rate_of_increase_4','rate_of_increase_5','rate_of_increase_7'])
+    result=obj_read.get_daily_data(codelist=['sh'],start_date=20210320,end_date=20210402,distance=1,columns=['ts_code','trade_date','open','high','low','close','rate_of_increase_next_1'])
     #result = obj_read.get_daily_data(codelist=['sh'], start_date=20210405, end_date=20210412, distance=1)
 
     print(result)
