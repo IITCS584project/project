@@ -123,7 +123,7 @@ class read_data():
 
 
             df.drop(columns=['Unnamed: 0'],inplace=True) # 文件内带有默认数字列，特定为了删除这个
-            
+
             res=df.values if columns=='' else df[columns].values
             res_list.append(res)
 
@@ -168,17 +168,36 @@ if __name__ == '__main__':
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data() #声明对象
-    result=obj_read.get_daily_data(codelist=['sh'],start_date=20210320,end_date=20210402,distance=1,columns=['ts_code','trade_date','open','high','low','close','rate_of_increase_next_1'])
+    result=obj_read.get_daily_data(codelist=['000001.SZ'],start_date=20210320,end_date=20210322,distance=1,columns=['ts_code','trade_date','open','high','low','close','pb','pe_ttm','rate_of_increase_next_1'])
     #result = obj_read.get_daily_data(codelist=['sh'], start_date=20210405, end_date=20210412, distance=1)
 
     print(result)
-    # code 传入一个list, list内如果有data set 以外的code 返回错误 | 如果传入不是 list格式 ，返回错误  | 如果传入空list 返回所有已有数据股票的内容
-    # 按照开始时间和结束时间取 000001.SZ这个标的物,distance=n n代表返回日期间隔
-    # 返回第1天一定是>=start_date的第一个交易日的日期数据
-    # 按照distance的间隔，返回所有交易日内的间隔日期数据
-    
-    #2021-04-17
-    #Index(['ts_code', 'trade_date', 'open', 'high', 'low', 'close', 'change','vol', 'amount', 'rate_of_increase', 'EMA12', 'EMA26', 'DEA', 'DIF','MACD', 'MA7', 'MA15', 'MA30'],
-    #Index(['ts_code', 'trade_date', 'open', 'high', 'low', 'close', 'change','vol', 'amount', 'rate_of_increase_4', 'rate_of_increase_5','rate_of_increase_7']
+
+
+#ts_code		股票代码
+#trade_date		交易日期
+#open		开盘价
+#high		最高价
+#low		最低价
+#close		收盘价
+#vol		成交量 （手）
+#amount		成交额 （千元）
+#rate_of_increase_*(*只可以是数字) 过去n日累计涨幅比例
+#rate_of_increase_next_*(*只可以是数字) 未来n日累计涨幅比例
+#turnover_rate		换手率（%）
+#turnover_rate_f		换手率（自由流通股）
+#volume_ratio		量比
+#pe		市盈率（总市值/净利润， 亏损的PE为空）
+#pe_ttm		市盈率（TTM，亏损的PE为空）
+#pb	float	市净率（总市值/净资产）
+#ps	float	市销率
+#ps_ttm		市销率（TTM）
+#dv_ratio		股息率 （%）
+#dv_ttm		股息率（TTM）（%）
+#total_share		总股本 （万股）
+#float_share		流通股本 （万股）
+#free_share		自由流通股本 （万）
+#total_mv		总市值 （万元）
+#circ_mv		流通市值（万元）
 
 
