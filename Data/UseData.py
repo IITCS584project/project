@@ -199,5 +199,12 @@ if __name__ == '__main__':
 #free_share		自由流通股本 （万）
 #total_mv		总市值 （万元）
 #circ_mv		流通市值（万元）
-
+#EMA26
+#EMA12
+#MA7
+#MA5
+#MA15
+#DIF
+#DEA
+#MACD
 
