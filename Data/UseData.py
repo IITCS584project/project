@@ -23,8 +23,9 @@ path=os.path.split(os.path.realpath(__file__))[0]
 class read_data():
 
     def __init__(self):
+        
         self.path=path+'/data_csv'
-
+        
     def clac_tech_index(self,df):
         #增加EMA12列=前一日EMA（12）×11/13＋今日收盘价×2/13
         #增加EMA26列= 前一日EMA（26）×25/27＋今日收盘价×2/27
@@ -136,7 +137,25 @@ class read_data():
         df = pd.read_csv(self.path + "/stocklist.csv", sep=",")
         return df
 
+    def get_daily_data_only_stock(self,codelist,start_date='',end_date='',distance=1,columns=''):
+        __code_list=[]
+        #如果传入的code不是list ,直接异常
+        if type(codelist) != type([]):
+            return (False,'code is need list type, your  parameter is '+str(type(codelist)),None)
+        stock_list=self.get_stock_list()
+        #剔除掉指数数据
+        stock_list=stock_list[stock_list['industry']!='后补数据']
+        
+        for code in codelist:
+            if code not in stock_list['ts_code'].tolist():
+                return (False,'code '+str(code)+' not in datalist',None)
+            else:
+                __code_list.append(code)
+        #如果不传入指定code，使用全部
+        if len(codelist)==0:
+            __code_list=stock_list['ts_code'].tolist()
 
+        return self.get_daily_data(__code_list,start_date=start_date,end_date=end_date,distance=distance,columns=columns)
     def get_daily_data_clac(self,code,start_date='',end_date=''):
         #tips：因为有的指标是需要昨日数据的，所以如果是该股票开盘第一天的话，一些rate 会是 NaN
         #close_rate_of_increase=今日收盘价/昨天收盘价
@@ -160,18 +179,35 @@ class read_data():
         df = df.loc[df["trade_date"] <= end_date] if end_date != '' else df
         return df
 
-
-
+    def save_local(self,name,msg):
+        path=self.path+'/data_local'
+        if not os.path.exists(path):
+            os.mkdir(path) 
+        if type(msg) != type(np.array([0])):
+            return ('msg is not type np.array,your  parameter is '+str(type(msg)))
+        df=pd.DataFrame(np.concatenate(msg))
+        df.to_csv(path+'/'+name+'.csv')
+    def read_local(self,name):
+        path=self.path+'/data_local'
+        if not os.path.exists(path):
+            os.mkdir(path) 
+        try:        
+            df=pd.read_csv(path+'/'+name+'.csv')
+        except Exception as e:
+            print(str(e))
+            return 
+        return df.values
 
 if __name__ == '__main__':
 
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data() #声明对象
-    result=obj_read.get_daily_data(codelist=['000001.SZ'],start_date=20210320,end_date=20210322,distance=1,columns=['ts_code','trade_date','open','high','low','close','pb','pe_ttm','rate_of_increase_next_1'])
-    #result = obj_read.get_daily_data(codelist=['sh'], start_date=20210405, end_date=20210412, distance=1)
-
-    print(result)
+    #result=obj_read.get_daily_data(codelist=[],start_date=20210320,end_date=20210322,distance=1,columns=['ts_code','trade_date','open','high','low','close','rate_of_increase_next_1'])
+    result=obj_read.get_daily_data_only_stock(codelist=['000001.SZ'],start_date=20210310,end_date=20210322,distance=1,columns=['ts_code','trade_date','open','high','low','close','rate_of_increase_next_1'])
+    obj_read.save_local('test',result[2])
+    result=obj_read.read_local('test')
+    print(type(result))
 
 
 #ts_code		股票代码
