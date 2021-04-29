@@ -10,7 +10,7 @@ class StockDataProvider:
         succ, info, asset_data = reader.get_daily_data( [asset_ticker, market_ticker] ,start_date, end_date, 1,
                     ['ts_code', 'trade_date', 'rate_of_increase_1', 'vol', 'rate_of_increase_7'])
         # remove the 1st row
-        yield_data = asset_data[0,1:, 2]        
+        yield_data = asset_data[0,1:, 2]
         # remove the last row,I use the chracteristics of yesterday to predict today's price
         yesterday_data = asset_data[0, :-1,3:]
         # normalize vol

@@ -1,4 +1,5 @@
 from InvestmentAnalystSystem.LinearAnalyst.MultiFactorSystem import MultiFactorSystem
+from InvestmentAnalystSystem.FactorAnalysis.FactorPortfolioBuilder import FactorPortfolioBuilder
 class FactorAnalyzer:
     def __init__(self):
         pass
@@ -33,9 +34,18 @@ class FactorAnalyzer:
 
     def LoadStockData(self, ticker_list, risk_yield, start_date, end_date):
         
-        # first step, calculate the exposure of specific risk
-        # there are two kinds of exposure. One of them is 
+        
+        reader = read_data()
+        succ, info, asset_data = reader.get_daily_data( ticker_list ,start_date, end_date, 1,
+                    ['ts_code', 'trade_date', 'rate_of_increase_1', 'vol', 'rate_of_increase_7'])
 
+        
+        pass
 
+    
 
+    def TestSingleFactorValidity(self, stocks_at_t, factor_column):
+        
+        low_indices, high_indices = FactorPortfolioBuilder.SingleFactorBuilder(stock_list, factor_column, 0.1)
 
+        pass
