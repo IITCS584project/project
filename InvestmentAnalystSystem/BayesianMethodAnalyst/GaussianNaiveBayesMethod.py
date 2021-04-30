@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
-from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcPredictResult, CalcRiseDropPredictResult
+from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcRiseDropPredictResult
 from Data.UseData import read_data
 from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
@@ -33,14 +33,23 @@ class GaussianNaiveBayesMethod:
         return (pred_y == true_y).sum() / len(true_y)
 
 def Main():
+    solver = GaussianNaiveBayesMethod()
     market_ticker = 'hs300'
-    stock_ticker = '600859.SH'
-    solver = GaussianNaiveBayesMethod()    
-    X, y = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20200401, 20200810)
-    y = y.reshape(len(y))
-    y = CalcRiseDropPredictResult(y)
+    stock_ticker = '600859.SH'        
+    X_train, y_train, X_test, y_test = StockDataProvider().GenStockData(stock_ticker, market_ticker, 
+                20190401, 20190810, 20190901, 20191001 )
+    y_train = CalcRiseDropPredictResult(y_train)
+    y_test = CalcRiseDropPredictResult(y_test)
+    '''
+    X_train, y_train = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20190401, 20190810)
+    y_train = y_train.reshape(len(y_train))
+    y_train = CalcRiseDropPredictResult(y_train)
+
+    X_test, y_test = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20190901, 20191001)
+    y_test = y_test.reshape(len(y_test))
+    y_test = CalcRiseDropPredictResult(y_test)
+    '''
     
-    X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
     solver.Fit(X_train,y_train)
     pred_y = solver.Predict(X_test)
     

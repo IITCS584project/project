@@ -2,6 +2,7 @@ from Data.UseData import read_data
 import numpy as np
 import torch
 from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
+from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcRiseDropPredictResult
 
 class StockDataProvider:
     @staticmethod
@@ -43,6 +44,16 @@ class StockDataProvider:
         X = np.concatenate([stock_chracteristics, market_data], axis=1)
         y = true_y.reshape((len(true_y), 1))
         return X, y
+
+    @staticmethod
+    def GenStockData(stock_ticker, market_ticker, train_begindate, train_enddate, test_begindate, test_enddate):
+        X_train, y_train = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, train_begindate, train_enddate)
+        y_train = y_train.reshape(len(y_train))
+        
+        X_test, y_test = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, test_begindate, test_enddate)
+        y_test = y_test.reshape(len(y_test))
+        
+        return X_train, y_train, X_test, y_test
 
     def GetStockDataForMomentum(asset_ticker, start_date, end_date):
         reader = read_data()
