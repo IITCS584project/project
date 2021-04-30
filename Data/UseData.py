@@ -27,6 +27,7 @@ class read_data():
         self.path=path+'/data_csv'
         
     def clac_tech_index(self,df):
+
         #增加EMA12列=前一日EMA（12）×11/13＋今日收盘价×2/13
         #增加EMA26列= 前一日EMA（26）×25/27＋今日收盘价×2/27
         #今日DIF=EMA12-EMA26
@@ -68,7 +69,7 @@ class read_data():
             df.loc[i,'MA30']=df.loc[i,'MA30']/30
         return df
 
-    def get_daily_data(self,codelist,start_date='',end_date='',distance=1,columns=''):
+    def get_daily_data(self,codelist,except_codelist='',start_date='',end_date='',distance=1,columns=''):
         
         # 读标的物列表
         # param  code  必填，标的物编码  e.g. 000001.SZ
@@ -77,7 +78,8 @@ class read_data():
         __code_list=[]
         #如果传入的code不是list ,直接异常
         if type(codelist) != type([]):
-            return (False,'code is need list type, your  parameter is '+str(type(codelist)),None)
+            return (False,'codelist is need list type, your  parameter is '+str(type(codelist)),None)
+
         stock_list=self.get_stock_list()
         #如果传入的code 有不在范围内的，直接异常
         for code in codelist:
@@ -89,12 +91,29 @@ class read_data():
         if len(codelist)==0:
             __code_list=stock_list['ts_code'].tolist()
 
+        #这个时候已经完整生成了__code_list了, 再删除except的内容
+
+        if except_codelist!='':
+            if type(except_codelist) != type([]):
+                return (False,'except_codelist is need list type, your  parameter is '+str(type(codelist)),None)
+            for r in except_codelist:
+                if r in __code_list:
+                    __code_list.remove(r)
+
+        if len(__code_list)==0:
+            return (False,'you request a none array','')  
+
         res_list=[]
+        isopen_drop_list={}
 
+        #先取出来所有交易日历
+
+        df_trade_cal=self.read_trade_cal(start_date=start_date,end_date=end_date)
+        df_trade_cal['trade_date']=df_trade_cal['cal_date']
+        df_trade_cal=df_trade_cal[df_trade_cal['is_open']==1]
         for code in __code_list:
-
+            
             df=pd.read_csv(self.path+"/"+code+".csv", sep=",")
-
             n=[]#需要收益率的list
             m=[]#需要计算当日到未来收益率的list
             if columns!='':
@@ -114,9 +133,29 @@ class read_data():
             df = df.loc[df["trade_date"] <= end_date] if end_date != '' else df # 截取日期片
             df=df.sort_values(["trade_date"],ascending=True) #重新排序 时间从上到下，变为从早到晚
 
-            df=df.reset_index(drop=True) # 重新定义索引
+            ####### 202104030 增加跟交易日匹配，返回每只股票缺失的交易日信息
+            df=pd.merge(df,df_trade_cal,how='right',on=['trade_date'],sort=False,copy=True,suffixes=('','_y'))
+            df.drop(columns=['Unnamed: 0_y'],inplace=True)
+            if len(df[df['ts_code'].isna()]['trade_date'].to_list())>0:
+                isopen_drop_list[code]=df[df['ts_code'].isna()]['trade_date'].to_list()
 
-            df = self.clac_tech_index(df) # 增加计算指标
+            ####### 返回信息后，去除了交易日历里带空的内容
+            df=df[df['ts_code'].notnull()]
+            #######
+            df=df.reset_index(drop=True) # 重新定义索引
+            columns_clac=[]
+            columns_clac.append('EMA12')
+            columns_clac.append('EMA26')
+            columns_clac.append('DIF')
+            columns_clac.append('DEA')
+            columns_clac.append('MA7')
+            columns_clac.append('MA15')
+            columns_clac.append('MA30')
+            columns_clac.append('MACD')
+
+            if len(list(set(columns_clac).intersection(set(columns))))>0: #有需要计算指标的时候，再计算计算指标
+                df = self.clac_tech_index(df) # 增加计算指标
+
             for i in df.index:
                 if i%distance!=0: #用index 取余 distance，余0返回，其他去掉
                     df.drop(index=i,inplace=True)
@@ -128,6 +167,12 @@ class read_data():
             res=df.values if columns=='' else df[columns].values
             res_list.append(res)
 
+
+
+        #20210430 如果有因为交易日历剔除数据就返回false
+        if len(isopen_drop_list)>0:
+            return (False,isopen_drop_list,np.array(res_list))
+
         #返回的时候判断特定值是不是有none，有就带上false
         res= (True,'',np.array(res_list)) if sum(df.isna().sum().to_list())==0 else  (False,'contains nan',np.array(res_list))
         return res
@@ -137,7 +182,7 @@ class read_data():
         df = pd.read_csv(self.path + "/stocklist.csv", sep=",")
         return df
 
-    def get_daily_data_only_stock(self,codelist,start_date='',end_date='',distance=1,columns=''):
+    def get_daily_data_only_stock(self,codelist,except_codelist='',start_date='',end_date='',distance=1,columns=''):
         __code_list=[]
         #如果传入的code不是list ,直接异常
         if type(codelist) != type([]):
@@ -155,7 +200,7 @@ class read_data():
         if len(codelist)==0:
             __code_list=stock_list['ts_code'].tolist()
 
-        return self.get_daily_data(__code_list,start_date=start_date,end_date=end_date,distance=distance,columns=columns)
+        return self.get_daily_data(__code_list,except_codelist=except_codelist,start_date=start_date,end_date=end_date,distance=distance,columns=columns)
     def get_daily_data_clac(self,code,start_date='',end_date=''):
         #tips：因为有的指标是需要昨日数据的，所以如果是该股票开盘第一天的话，一些rate 会是 NaN
         #close_rate_of_increase=今日收盘价/昨天收盘价
@@ -198,16 +243,29 @@ class read_data():
             return 
         return df.values
 
+    def read_trade_cal(self,start_date,end_date):
+        df = pd.read_csv(self.path + "/trade_cal.csv", sep=",")
+        df = df.loc[df["cal_date"] >= start_date] if start_date != '' else df
+        df = df.loc[df["cal_date"] <= end_date] if end_date != '' else df # 截取日期片
+        return df
+
 if __name__ == '__main__':
 
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data() #声明对象
     #result=obj_read.get_daily_data(codelist=[],start_date=20210320,end_date=20210322,distance=1,columns=['ts_code','trade_date','open','high','low','close','rate_of_increase_next_1'])
-    result=obj_read.get_daily_data_only_stock(codelist=['000001.SZ'],start_date=20210310,end_date=20210322,distance=1,columns=['ts_code','trade_date','open','high','low','close','rate_of_increase_next_1'])
-    obj_read.save_local('test',result[2])
-    result=obj_read.read_local('test')
-    print(type(result))
+    result=obj_read.get_daily_data(codelist=['000001.SZ','sz'],except_codelist=['hs300','sz50','zxb','cyb'],start_date=20210301,end_date=20210305,distance=1,columns=['ts_code','trade_date','open','high','low','close','rate_of_increase_next_1'])
+    print(result)
+
+    #print(result)
+    #obj_read.save_local('test',result[2])
+    #result=obj_read.read_local('test')
+
+#3D 混合
+#交易日剔除计算 ok
+#剔除其他 ok
+# 只有用到计算指标的时候再计算 ok
 
 
 #ts_code		股票代码
