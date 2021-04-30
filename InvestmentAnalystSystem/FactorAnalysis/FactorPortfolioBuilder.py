@@ -8,18 +8,15 @@ class FactorPortfolioBuilder:
         pass
 
     
-    def SingleFactorBuilderAtT(self, stock_array: np.array, sort_column: int, perc_portfolio :float):
+    def SortAndSplit(self, stock_array: np.array, sort_column: int, split_num :int):
         '''
         单变量排序，将所有股票按照某个变量排序，取分值最高和分值最低的两组股票，        
         stock_array: (stock_num, feature_num)
         '''
         # we sort the stock list by the factor variable
         indices :np.array = stock_array[:, sort_column].argsort()
-        total_num :int = stock_array.shape[0]
-        pick_num :int = total_num * perc_portfolio
-        low_indices = indices[:pick_num]
-        high_indices = indices[-pick_num:]
-        return low_indices, high_indices
+        splited_indices = np.array_split(indices, split_num)
+        return splited_indices
 
     def BuildSingleFactor(self, stock_codelist, factor_columnname, start_date, end_date, rebalance_distance):
         '''
@@ -45,7 +42,9 @@ class FactorPortfolioBuilder:
         # 因子需要定期reblance，每次rebalance之后，因子内的股票都不一样
         for t in range(0, asset_data.shape[1], rebalance_distance):
             stocks_at_t = asset_data[:, t, :]
-            low_indices, high_indices = self.SingleFactorBuilderAtT(stocks_at_t, factor_columnindex, 0.05)
+            splited_indices = self.SortAndSplit(stocks_at_t, factor_columnindex, 10)
+            low_indices = splited_indices[0]
+            high_indices = splited_indices[len(splited_indices) - 1]
             # now we need to build a long-short portfolio as a factor
             # 构造风格因子，它是一个多空组合
             portfolio = StyleFactorPortolioInfo()

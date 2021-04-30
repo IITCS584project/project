@@ -7,19 +7,41 @@ class StockDataProvider:
     @staticmethod
     def GetStockDataForPredict( asset_ticker, market_ticker, start_date, end_date ):
         reader = read_data()
-        succ, info, asset_data = reader.get_daily_data( [asset_ticker, market_ticker] ,start_date, end_date, 1,
-                    ['ts_code', 'trade_date', 'rate_of_increase_1', 'vol', 'rate_of_increase_7'])
+        succ, info, asset_info = reader.get_daily_data( [asset_ticker] ,start_date, end_date, 1,
+                    ['ts_code', 'trade_date', 'rate_of_increase_next_7', 'vol', 'rate_of_increase_1', 'rate_of_increase_3', 
+                    'rate_of_increase_7', 'rate_of_increase_10', 'pe', 'pb', 'ps',  
+                    'turnover_rate', 'volume_ratio'])
+        '''
+        if not succ:
+            print("Asset error", asset_ticker, info)
+            error_data = asset_info[0, :, 2:]
+            error_data = error_data.astype(np.float)
+            is_nan = np.isnan(error_data)
+            nan_pos = np.where(is_nan)
+            return
+        '''
+
+        succ, info, market_info = reader.get_daily_data( [market_ticker] ,start_date, end_date, 1,
+                    ['ts_code', 'trade_date', 'vol', 'rate_of_increase_1' , 'rate_of_increase_3', 'rate_of_increase_7', 'rate_of_increase_20'])
+        '''
+        if not succ:
+            print("Market error", info)
+            return
+        '''
         # remove the 1st row
-        yield_data = asset_data[0,1:, 2]
+        # 要与预测的模型
+        # rate of increase next 3
+        true_y = asset_info[0,:, 2]
         # remove the last row,I use the chracteristics of yesterday to predict today's price
-        yesterday_data = asset_data[0, :-1,3:]
+        stock_chracteristics = asset_info[0, :,3:]
         # normalize vol
-        yesterday_data[:, 0] = UtilFuncs.Normalize(yesterday_data[:,0])
+        stock_chracteristics[:, 0] = UtilFuncs.Normalize(stock_chracteristics[:,0])
         # use the market data of yesterday to predict today's price
-        market_data = asset_data[1, :-1, 2]
-        market_data = market_data.reshape((len(market_data),1))
-        X = np.concatenate([yesterday_data, market_data], axis=1)
-        y = yield_data.reshape((len(yield_data), 1))
+        market_data = market_info[0, :, 2:]
+        market_data[:, 0] = UtilFuncs.Normalize(market_data[:,0])
+        #market_data = market_data.reshape((len(market_data),3))
+        X = np.concatenate([stock_chracteristics, market_data], axis=1)
+        y = true_y.reshape((len(true_y), 1))
         return X, y
 
     def GetStockDataForMomentum(asset_ticker, start_date, end_date):

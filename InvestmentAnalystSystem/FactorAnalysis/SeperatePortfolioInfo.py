@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
-class StyleFactorPortfolioInfo:
+class SeperatePortfolioInfo:
     '''
-    style factor is a kind of factor which is realted with the stock itself
-    such as E/P, B/P
+    差价组合，就是多空组合
+    固定
     '''
     def __init__(self):
         pass

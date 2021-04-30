@@ -1,5 +1,5 @@
 import numpy as np
-from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcPredictResult
+from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcPredictResult, CalcRiseDropPredictResult
 from Data.UseData import read_data
 from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 from InvestmentAnalystSystem.NNPricingSystem.MultiFactorNN import MultiFactorNN
@@ -17,7 +17,8 @@ class MultiFactorNNPricingSystem:
     def Init(self, feature_num :int):
         self.mSolver = NNRegressionSystem()
         self.mModel = MultiFactorNN(feature_num)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.1, momentum=0.9)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.00001, momentum=0.9, weight_decay = 0.1)
+        #self.mOptimizer = optim.Adam(self.mModel.parameters(), lr=0.0004, weight_decay=0)
         self.mLossFunc = nn.MSELoss()
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
         
@@ -25,7 +26,7 @@ class MultiFactorNNPricingSystem:
 
     def Fit(self, X,y):
         self.Init(X.shape[1])
-        self.mSolver.Fit(X, y, 5000)        
+        self.mSolver.Fit(X, y, 100000)        
         
     def Predict(self, X):
         return self.mSolver.Predict(X)
@@ -35,8 +36,8 @@ class MultiFactorNNPricingSystem:
         '''
         calculate the accuracy of the prediction y
         '''        
-        pred_y = CalcPredictResult(pred_y)
-        true_y = CalcPredictResult(true_y)
+        pred_y = CalcRiseDropPredictResult(pred_y)
+        true_y = CalcRiseDropPredictResult(true_y)
         return (pred_y == true_y).sum() / len(true_y)
 
     def ShowParameters(self, plt):
@@ -49,7 +50,7 @@ def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'
     solver = MultiFactorNNPricingSystem()    
-    X, y = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20190305, 20200410)
+    X, y = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20200401, 20200810)    
     X = StockDataProvider.NpArrayToTensor(X)
     y = StockDataProvider.NpArrayToTensor(y)
     X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
