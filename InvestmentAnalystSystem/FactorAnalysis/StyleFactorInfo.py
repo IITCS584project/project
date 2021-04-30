@@ -1,4 +1,4 @@
-from InvestmentAnalystSystem.FactorAnalysis.SeperatePortfolioInfo import SeperatePortfolioInfo
+from InvestmentAnalystSystem.FactorAnalysis.SpreadPortfolioInfo import SpreadPortfolioInfo
 import numpy as np
 from scipy import stats
 class StyleFactorInfo:
@@ -10,7 +10,7 @@ class StyleFactorInfo:
         self.mDateColumn = date_column
         self.mYieldColumn = yield_column
 
-    def AddPortfolio(self, portfolio :SeperatePortfolioInfo):
+    def AddPortfolio(self, portfolio :SpreadPortfolioInfo):
         self.mPortfolios.append(portfolio)
         pass
     
@@ -26,7 +26,7 @@ class StyleFactorInfo:
         '''
         # calculate the average return in the time series
         # 首先计算一个时间序列内的平均收益率
-        portfolio : SeperatePortfolioInfo = None
+        portfolio : SpreadPortfolioInfo = None
         # 时间序列的收益率
         ts_yields = []
         for t in range(start_date, end_date + 1, distance):

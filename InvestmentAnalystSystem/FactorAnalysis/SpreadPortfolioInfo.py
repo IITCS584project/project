@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-class SeperatePortfolioInfo:
+class SpreadPortfolioInfo:
     '''
     差价组合，就是多空组合
     固定

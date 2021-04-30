@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
-from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcPredictResult
+from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcPredictResult, CalcRiseDropPredictResult
 from Data.UseData import read_data
 from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
@@ -36,11 +36,14 @@ def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'
     solver = GaussianNaiveBayesMethod()    
-    X, y = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20190305, 20200410)
-    y = CalcPredictResult(y)
+    X, y = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20200401, 20200810)
+    y = y.reshape(len(y))
+    y = CalcRiseDropPredictResult(y)
+    
     X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
     solver.Fit(X_train,y_train)
     pred_y = solver.Predict(X_test)
+    
     accuracy = solver.Accuracy(pred_y, y_test)
     print(accuracy)    
     pass

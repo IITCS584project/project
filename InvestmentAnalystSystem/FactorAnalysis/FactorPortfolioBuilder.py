@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from Data.UseData import read_data
-from InvestmentAnalystSystem.FactorAnalysis.StyleFactorPortfolioInfo import StyleFactorPortfolioInfo
+from InvestmentAnalystSystem.FactorAnalysis.SpreadPortfolioInfo import SpreadPortfolioInfo
 from InvestmentAnalystSystem.FactorAnalysis.StyleFactorInfo import StyleFactorInfo
 import numpy as np
 class FactorPortfolioBuilder:
@@ -47,7 +47,7 @@ class FactorPortfolioBuilder:
             high_indices = splited_indices[len(splited_indices) - 1]
             # now we need to build a long-short portfolio as a factor
             # 构造风格因子，它是一个多空组合
-            portfolio = StyleFactorPortolioInfo()
+            portfolio = SpreadPortfolioInfo()
             style_factor.Init(current_date, current_date + rebalance_distance - 1, t, high_indices, low_indices, asset_data, yield_columnindex)
             factor_info.AddPortfolio(portfolio)
             # move the date forward
