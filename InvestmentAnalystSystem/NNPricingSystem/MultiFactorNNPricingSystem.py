@@ -17,7 +17,7 @@ class MultiFactorNNPricingSystem:
     def Init(self, feature_num :int):
         self.mSolver = NNRegressionSystem()
         self.mModel = MultiFactorNN(feature_num)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.00001, momentum=0.9, weight_decay = 0.1)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.00002, momentum=0.9, weight_decay = 0.1)
         #self.mOptimizer = optim.Adam(self.mModel.parameters(), lr=0.0004, weight_decay=0)
         self.mLossFunc = nn.MSELoss()
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
