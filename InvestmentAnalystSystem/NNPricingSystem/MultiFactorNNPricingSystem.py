@@ -18,7 +18,7 @@ class MultiFactorNNPricingSystem:
     def Init(self, feature_num :int):
         self.mSolver = NNRegressionSystem()
         self.mModel = MultiFactorNN(feature_num)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.0002, momentum=0.9, weight_decay = 0.2)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.0004, momentum=0.9, weight_decay = 0.5)
         #self.mOptimizer = optim.Adam(self.mModel.parameters(), lr=0.0004, weight_decay=0)
         self.mLossFunc = nn.MSELoss()
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc, self.CallbackDuringFit, 100 )
@@ -46,7 +46,7 @@ class MultiFactorNNPricingSystem:
 
     def Fit(self, X,y):
         self.Init(X.shape[1])
-        self.mSolver.Fit(X, y, 5000)        
+        self.mSolver.Fit(X, y, 150)        
         
     def Predict(self, X):
         return self.mSolver.Predict(X)
@@ -90,7 +90,7 @@ def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'        
     X_train, y_train, X_test, y_test = StockDataProvider().GenStockData(stock_ticker, market_ticker, 
-                20190401, 20190810, 20190820, 20190920 )
+                20190201, 20190810, 20190820, 20191120 )
 
     X_train = StockDataProvider.NpArrayToTensor(X_train)
     y_train = y_train.reshape(len(y_train), 1)

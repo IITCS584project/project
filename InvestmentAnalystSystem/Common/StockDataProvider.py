@@ -10,7 +10,7 @@ class StockDataProvider:
         reader = read_data()
         succ, info, asset_info = reader.get_daily_data( [asset_ticker], [] ,start_date, end_date, 1,
                     ['ts_code', 'trade_date', 'rate_of_increase_next_5', 'vol', 'rate_of_increase_1', 'rate_of_increase_3', 
-                    'rate_of_increase_7', 'rate_of_increase_10', 'pe', 'pb', 'ps',  
+                    'rate_of_increase_7', 'rate_of_increase_10', 'rate_of_increase_20', 'pe', 'pb', 'ps','dv_ratio',  
                     'turnover_rate', 'volume_ratio'])
         '''
         if not succ:
