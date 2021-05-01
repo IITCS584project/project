@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.optim as optim
 from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
 import matplotlib.pyplot as plt
+from InvestmentAnalystSystem.Common.DrawFunctions import DrawFunctions
 
 class MultiFactorNNPricingSystem:
     def __init__(self):
@@ -17,16 +18,35 @@ class MultiFactorNNPricingSystem:
     def Init(self, feature_num :int):
         self.mSolver = NNRegressionSystem()
         self.mModel = MultiFactorNN(feature_num)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.0004, momentum=0.9, weight_decay = 0.5)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.0002, momentum=0.9, weight_decay = 0.2)
         #self.mOptimizer = optim.Adam(self.mModel.parameters(), lr=0.0004, weight_decay=0)
         self.mLossFunc = nn.MSELoss()
-        self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
+        self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc, self.CallbackDuringFit, 100 )
+        self.mTrainAccuracyHistory = []
+        self.mTestAccuracyHistory = []
         
-        
+    def CallbackDuringFit(self):
+        pred_y = self.Predict(self.mXTrain)
+        accuracy = self.Accuracy(pred_y, self.mYTrain)
+        self.mTrainAccuracyHistory.append(accuracy)
+
+        pred_y = self.Predict(self.mXTest)
+        accuracy = self.Accuracy(pred_y, self.mYTest)
+        self.mTestAccuracyHistory.append(accuracy)
+
+        pass
+
+    def FitAndTestAccuracy(self, X_train, y_train, X_test, y_test):
+        self.mXTrain = X_train
+        self.mYTrain = y_train
+        self.mXTest = X_test
+        self.mYTest = y_test
+        self.Fit(X_train, y_train)
+
 
     def Fit(self, X,y):
         self.Init(X.shape[1])
-        self.mSolver.Fit(X, y, 50000)        
+        self.mSolver.Fit(X, y, 5000)        
         
     def Predict(self, X):
         return self.mSolver.Predict(X)
@@ -43,6 +63,16 @@ class MultiFactorNNPricingSystem:
     def ShowParameters(self, plt):
         self.mSolver.ShowParameters()
         self.mSolver.Draw(plt)
+        plt.show()
+        train_history = np.array(self.mTrainAccuracyHistory)
+        test_history = np.array(self.mTestAccuracyHistory)
+        x_ticks = np.arange(len(self.mTrainAccuracyHistory))
+        cls1 = plt.plot(x_ticks, train_history, color=(1,0,0), label="Train")
+        cls2 = plt.plot(x_ticks, test_history, color=(0,1,0), label="Validation")
+        plt.xlabel('Epoch')
+        plt.ylabel('Classification accuracy')
+        plt.title('Classification accuracy history')
+        plt.legend()
         plt.show()
 
 
@@ -70,12 +100,15 @@ def Main():
     y_test = StockDataProvider.NpArrayToTensor(y_test)
 
     solver = MultiFactorNNPricingSystem()    
-    solver.Fit(X_train,y_train)
+    solver.FitAndTestAccuracy(X_train,y_train, X_test, y_test)
     solver.ShowParameters(plt)
 
+    pred_y = solver.Predict(X_train)
+    accuracy = solver.Accuracy(pred_y, y_train)
+    print( "Train accuracy", accuracy)
     pred_y = solver.Predict(X_test)
     accuracy = solver.Accuracy(pred_y, y_test)
-    print("accuracy", accuracy)
+    print("Test accuracy", accuracy)
     pass
 '''
 def Main2():

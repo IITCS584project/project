@@ -8,8 +8,8 @@ class StockDataProvider:
     @staticmethod
     def GetStockDataForPredict( asset_ticker, market_ticker, start_date, end_date ):
         reader = read_data()
-        succ, info, asset_info = reader.get_daily_data( [asset_ticker] ,start_date, end_date, 1,
-                    ['ts_code', 'trade_date', 'rate_of_increase_next_7', 'vol', 'rate_of_increase_1', 'rate_of_increase_3', 
+        succ, info, asset_info = reader.get_daily_data( [asset_ticker], [] ,start_date, end_date, 1,
+                    ['ts_code', 'trade_date', 'rate_of_increase_next_5', 'vol', 'rate_of_increase_1', 'rate_of_increase_3', 
                     'rate_of_increase_7', 'rate_of_increase_10', 'pe', 'pb', 'ps',  
                     'turnover_rate', 'volume_ratio'])
         '''
@@ -22,7 +22,7 @@ class StockDataProvider:
             return
         '''
 
-        succ, info, market_info = reader.get_daily_data( [market_ticker] ,start_date, end_date, 1,
+        succ, info, market_info = reader.get_daily_data( [market_ticker], [] ,start_date, end_date, 1,
                     ['ts_code', 'trade_date', 'vol', 'rate_of_increase_1' , 'rate_of_increase_3', 'rate_of_increase_7', 'rate_of_increase_20'])
         '''
         if not succ:

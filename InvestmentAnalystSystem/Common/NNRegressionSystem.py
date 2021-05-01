@@ -2,20 +2,29 @@ import torch
 import torch.nn as nn
 import numpy as np
 from InvestmentAnalystSystem.Common.DrawFunctions import DrawFunctions
+
 class NNRegressionSystem:
     def __init__(self):
         self.mModel :nn.Module = None
         self.mOptimizer = None
         self.mLossFunc = None
-        self.mLoss = []
+        self.mLossHistory = []
         pass
 
-    def Init( self, model :nn.Module, optimizer , loss_func):
+    def Init( self, model :nn.Module, optimizer , loss_func, callback_infit = None, epoch_batch = 1):
         self.mModel = model
         self.mOptimizer = optimizer
-        self.mLossFunc = loss_func
+        self.mLossFunc = loss_func        
+        self.mCallbackInFit = callback_infit
+        self.mEpochBatch = epoch_batch
         pass
-
+    
+    def OnPressKey(self):
+        print("a")
+        pass
+    def OnReleaseKey(self, key):
+        print(key)
+        pass
     
     def Fit(self, X, y, epoch):
         lastprint = ""
@@ -29,13 +38,15 @@ class NNRegressionSystem:
             loss = self.mLossFunc(y_pred, y)                        
             loss_item = loss.item()
             lastprint = str(t) + "\t" + str(loss_item)  
-            self.mLoss.append(loss_item)
+            self.mLossHistory.append(loss_item)
             print(lastprint, end="")
             print("\b" * len(lastprint) * 2, end="", flush=True)
             # backward pass
             loss.backward()
             # apply the weights
             self.mOptimizer.step()
+            if t % self.mEpochBatch == 0 and self.mCallbackInFit != None:
+                self.mCallbackInFit()
         print("")
         pass
 
@@ -64,7 +75,7 @@ class NNRegressionSystem:
         #k,b = self.ExtractModelParameter()
         #DrawLinearRegression(plt, self.mMarketYield.numpy(), self.mAssetYield.numpy(), k, b, "CAPM", self.mMarketTicker, self.mAssetTicker)
         #plt.show()
-        loss :np.array = np.array(self.mLoss)
+        loss :np.array = np.array(self.mLossHistory)
         DrawFunctions.DrawLoss(plt, loss, "Loss", "iterations", "loss")
         pass
 
