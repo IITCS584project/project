@@ -53,12 +53,7 @@ class StockDataProvider:
         X_test, y_test = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, test_begindate, test_enddate)
         y_test = y_test.reshape(len(y_test))
         
-        return X_train, y_train, X_test, y_test
-
-    def GetStockDataForMomentum(asset_ticker, start_date, end_date):
-        reader = read_data()
-        succ, info, asset_data = reader.get_daily_data( [asset_ticker, market_ticker] ,start_date, end_date, 1,
-                    ['ts_code', 'trade_date', 'rate_of_increase_1', 'vol', 'rate_of_increase_7'])
+        return X_train, y_train, X_test, y_test    
     
 
     @staticmethod

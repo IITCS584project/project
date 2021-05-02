@@ -22,42 +22,51 @@ class FactorPortfolioBuilder:
         '''
         单变量排序后，取分值最高和分值最低的两组股票，
         构建多空对冲组合，近似作为因子收益率
+        factor_columnname: 用于排序的列名
         '''
         # ['ts_code', 'trade_date', 'rate_of_increase_1', 'vol', 'rate_of_increase_7'])
         yield_columnname = "rate_of_increase_1"
+        date_columnindex = 1
         yield_columnindex = 2
         factor_columnindex = 3
         need_columns =  ['ts_code', 'trade_date', yield_columnname, factor_columnname]
         reader = read_data()
         # all the stock data of the whole market
-        succ, info, asset_data = reader.get_daily_data( stock_codelist ,start_date, end_date, 1,
+        succ, info, asset_data = reader.get_daily_data( stock_codelist, [] ,start_date, end_date, 1,
                    need_columns)
         if not succ:
             print(info)
             return False
-        factor_list = []
+        
         factor_info = StyleFactorInfo()
-        current_date = start_date
+        factor_info.Init(date_columnindex, yield_columnindex)        
         # pick the portfolio
-        # 因子需要定期reblance，每次rebalance之后，因子内的股票都不一样
+        # 因子需要定期reblance，每次rebalance之后，因子内的股票都不同
         for t in range(0, asset_data.shape[1], rebalance_distance):
+            # 从第一个时刻开始构建portfolio，持续rebalance distance时间
             stocks_at_t = asset_data[:, t, :]
-            splited_indices = self.SortAndSplit(stocks_at_t, factor_columnindex, 10)
+            splited_indices = self.SortAndSplit(stocks_at_t, factor_columnindex, 4)
             low_indices = splited_indices[0]
             high_indices = splited_indices[len(splited_indices) - 1]
             # now we need to build a long-short portfolio as a factor
             # 构造风格因子，它是一个多空组合
-            portfolio = SpreadPortfolioInfo()
-            style_factor.Init(current_date, current_date + rebalance_distance - 1, t, high_indices, low_indices, asset_data, yield_columnindex)
+            portfolio :SpreadPortfolioInfo = SpreadPortfolioInfo()
+            # 该portfolio的持续存在时间
+            duration :int = np.minimum(rebalance_distance, asset_data.shape[1] - t)            
+            portfolio.Init( t, duration, high_indices, low_indices, asset_data, yield_columnindex)
             factor_info.AddPortfolio(portfolio)
-            # move the date forward
-            current_date += rebalance_distance
+            
         
         return factor_info
 
 def Main():
     builder = FactorPortfolioBuilder()
-    factor = builder.BuildSingleFactor(['600859.SH', '600519.SH', '002624.SZ', '600887.SH', '600016.SH', '600030.SH', '600036.SH', '600600.SH', '000600.SZ', '300600.SZ'], 'pb', 20190108,20190125, 20)
+    #factor = builder.BuildSingleFactor(['600859.SH', '600519.SH', 
+    #'002624.SZ', '600887.SH', '600016.SH', '600030.SH', '600036.SH', '600600.SH', '300600.SZ'], 'pb', 20190110,20191029, 20)    
+    factor = builder.BuildSingleFactor([], 'pb', 20190110,20191029, 20)    
+    factor_yields = factor.CalculateTimeSeriesYield(0,5, 20)
+    is_significant ,t, p = factor.IsTimeSeriesYieldSignificant(factor_yields)
+    print(is_significant, t, p)
     pass
 
 Main()

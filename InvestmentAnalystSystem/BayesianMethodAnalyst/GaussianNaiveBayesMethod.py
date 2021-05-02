@@ -37,7 +37,7 @@ def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'        
     X_train, y_train, X_test, y_test = StockDataProvider().GenStockData(stock_ticker, market_ticker, 
-                20190401, 20190810, 20190901, 20191001 )
+                20190201, 20190810, 20190820, 20191120 )
     y_train = CalcRiseDropPredictResult(y_train)
     y_test = CalcRiseDropPredictResult(y_test)
     '''

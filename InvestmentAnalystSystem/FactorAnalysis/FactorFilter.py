@@ -1,5 +1,6 @@
 from InvestmentAnalystSystem.LinearAnalyst.MultiFactorSystem import MultiFactorSystem
 from InvestmentAnalystSystem.FactorAnalysis.FactorPortfolioBuilder import FactorPortfolioBuilder
+import numpy as np
 class FactorAnalyzer:
     def __init__(self):
         pass

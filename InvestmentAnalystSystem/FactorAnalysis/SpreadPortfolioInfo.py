@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import numpy as np
 class SpreadPortfolioInfo:
     '''
     差价组合，就是多空组合
@@ -6,75 +7,89 @@ class SpreadPortfolioInfo:
     '''
     def __init__(self):
         pass
-    def Init(self, begin_date, end_date, begintime_index, long_stockindices, short_stockindices, wholemarket_stocks, yieldcolumnindex):
-        self.mBeginDate = begin_date
-        self.mEndDate = end_date
+    def Init(self, begintime_index, duration, long_stockindices, short_stockindices, wholemarket_stocks, yieldcolumnindex):        
         # 在全部stock中的时间开始索引
         self.mBeginTimeIndex = begintime_index
+        # 当前portfolio持续多少个交易日
+        self.mDuration = duration
+        # 做多的股票列表索引
         self.mLongIndices = long_stockindices
+        # 做空的股票列表索引
         self.mShortIndices = short_stockindices
+        # 全市场股票信息
         self.mMarketStocks = wholemarket_stocks
         self.mYieldColumnIndex = yieldcolumnindex
+        # 
+        self.mLongNAV :np.array = None
+        self.mShortNAV :np.array = None
+        self.CalculateDailyNAV(self.mYieldColumnIndex)
 
-    def IsValidTime(self, date):
-        return date >= self.mBeginDate and date <= self.mEndDate
+    def IsValidTime(self, tindex):
+        return tindex >= self.mBeginTimeIndex and tindex < self.mBeginTimeIndex + self.mDuration
 
-    def ConvertDateToTimeIndex(self, date_column :int, date :int):
-        date_index = np.where(long_stocks[:, date_column, :] == date) 
-        return date_index
+    def CalculateDailyNAV(self, yield_column):
+        '''
+        计算每日净值
+        '''
+        #(long_num, days_num, feature_num)
+        long_stocks = self.mMarketStocks[self.mLongIndices, :, :]
+        long_num = len(self.mLongIndices)
+        #(short_num, days_num, feature_num)
+        short_stocks = self.mMarketStocks[self.mShortIndices, :, :]
+        short_num = len(self.mShortIndices)
+        
+        self.mLongNAV = np.zeros((long_stocks.shape[0], self.mDuration))
+        self.mShortNAV = np.zeros((short_stocks.shape[0], self.mDuration))
+        # 建仓日第初始净值为
+        long_nav = np.full(long_stocks.shape[0], 0.5 / long_num)
+        short_nav = np.full(short_stocks.shape[0], 0.5/short_num)
+        # 假设是首日开盘建仓        
+        for t in range(self.mBeginTimeIndex, self.mBeginTimeIndex + self.mDuration):
+            # 第t日
+            #(stock_num, )
+            long_yield = long_stocks[:,t, yield_column]
+            short_yield = short_stocks[:, t, yield_column]
+            # 计算当天收盘时的nav
+            long_nav = long_nav * (long_yield * 0.01 + 1)
+            short_nav = short_nav * (-short_yield * 0.01 + 1)
+            self.mLongNAV[:, t - self.mBeginTimeIndex] = long_nav
+            self.mShortNAV[:, t - self.mBeginTimeIndex] = short_nav
+
+        pass
+    
+    def CalculateYield(self, start_tindex, end_tindex):
+        '''
+        计算开始日期到结束日期的总收益率
+        '''
+        if (start_tindex >= self.mBeginTimeIndex + self.mDuration) or (end_tindex < self.mBeginTimeIndex):
+            # 不在时间范围内，不会对yield产生变化
+            return 0.0
+        
+        if start_tindex <= self.mBeginTimeIndex:
+            start_tindex = self.mBeginTimeIndex
+        if end_tindex >= self.mBeginTimeIndex + self.mDuration:
+            end_tindex = self.mBeginTimeIndex + self.mDuration - 1
+        
+        if end_tindex < start_tindex:
+            return 0.0
+
+        # 统计从开始日到结束日到总收益率
+        # 实际上是从开始日前一天计算净值，到结束日时到净值差异
+        long_startnav = 0.5
+        short_startnav = 0.5
+        if start_tindex > self.mBeginTimeIndex:
+            long_startnav = self.mLongNAV[:, start_tindex - 1 - self.mBeginTimeIndex]
+            short_startnav = self.mShortNAV[:, start_tindex - 1 - self.mBeginTimeIndex]
+            # 所有股票相加
+            long_startnav = long_startnav.sum()
+            short_startnav = short_startnav.sum()
 
         
-    def ConvertTimeIndexToDate(self, date_column :int, time_index :int):
-        return self.mMarketStocks[0, time_index, date_column]
-
-    def CalculateYieldEqualWeighted(self, start_date, end_date, date_column, yield_column) ->float:
-        # assuming it is equal weighted portfolio
-        # 等权重portfolio
-        if start_date < self.mBeginDate:
-            start_date = self.mBeginDate
-        if end_date > self.mEndDate:
-            end_date = self.mEndDate
         
-        if end_date < start_date:
-            return False
+        long_endnav = self.mLongNAV[:, end_tindex - self.mBeginTimeIndex].sum()
+        short_endnav = self.mShortNAV[:, end_tindex - self.mBeginTimeIndex].sum()
 
-        # 多头股票
-        long_stocks = self.mMarketStocks[self.mLongIndices, :]
-        time_startindex = self.ConvertDateToTimeIndex(date_column, start_date)
-        time_endindex = self.ConvertDateToTimeIndex(date_column, end_date)
-
-        long_num = long_stocks.shape[0]
-        
-        # 空头股票
-        short_stocks = self.mMarketStocks[self.mShortIndices, :]
-        short_num = short_stocks.shape[0]
-        # 由于我们是在期初重新reblance这个投资组合，这个投资组合还是等权重的，
-        # 所以算中间某一段时间的yield就要从期初开始构建
-
-        # 期初多头空头等金额
-        weight_long = np.full((long_num,), 0.5 / long_num)
-        weight_short = np.full((short_num,), 0.5 / short_num)
-        
-        epochs = 0
-        #从构建组合前到开始时间前的时间加权收益率        
-        long_yields_before = long_stocks[:, self.mBeginTimeIndex: time_startindex, yield_column]
-        long_yields_before = (long_yields_before * 0.01 + 1).prod(axis=1)
-        
-        short_yields_before = short_stocks[:,self.mBeginTimeIndex: time_startindex, yield_column]
-        short_yields_before = (short_yields_before * 0.01 + 1).prod(axis=1)
-
-        # 从构建组合到开始时间前的净值
-        netval_before = np.dot(weight_long, long_yields_before) - np.dot(weight_short, short_yields_before)
-
-        #从构建组合到结束时间的时间加权收益率
-        long_yields_toend = long_stocks[:, self.mBeginTimeIndex: time_endindex + 1, yield_column]
-        long_yields_toend = (long_yields_toend * 0.01 + 1).prod(axis=1)
-
-        short_yields_toend = short_stocks[:,self.mBeginTimeIndex: time_endindex + 1, yield_column]
-        short_yields_toend = ( short_yields_toend * 0.01 + 1).prod(axis=1)
-
-        # 从构建组合到结束时间的净值
-        netval_toend = np.dot(weight_long, long_yields_toend) - np.dot(weight_short, short_yields_toend)
-        final_yield = (netval_toend - netval_before) / netval_before
-        return final_yield
-
+        start_nav = long_startnav + short_startnav
+        end_nav = long_endnav + short_endnav
+        ret = (end_nav - start_nav ) / start_nav
+        return ret
