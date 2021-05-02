@@ -1,4 +1,4 @@
-#!/usr/bin/python
+ #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
 
@@ -164,7 +164,9 @@ class read_data():
 
             df.drop(columns=['Unnamed: 0'],inplace=True) # 文件内带有默认数字列，特定为了删除这个
 
-            res=df.values if columns=='' else df[columns].values
+            
+            df=df if  columns=='' else df[columns]
+            res=df.values
             res_list.append(res)
 
 
@@ -172,7 +174,7 @@ class read_data():
         #20210430 如果有因为交易日历剔除数据就返回false
         if len(isopen_drop_list)>0:
             return (False,isopen_drop_list,np.array(res_list))
-
+        
         #返回的时候判断特定值是不是有none，有就带上false
         res= (True,'',np.array(res_list)) if sum(df.isna().sum().to_list())==0 else  (False,'contains nan',np.array(res_list))
         return res
@@ -248,20 +250,32 @@ class read_data():
         df = df.loc[df["cal_date"] >= start_date] if start_date != '' else df
         df = df.loc[df["cal_date"] <= end_date] if end_date != '' else df # 截取日期片
         return df
+    #20210502 增加返回限定日期内有交易股票的范围
+    def get_trade_cal_stock_list(self,start_date,end_date):
+        df_trade_cal=self.read_trade_cal(start_date=start_date,end_date=end_date)
+        df_trade_cal=df_trade_cal[df_trade_cal['is_open']==1]
+        trade_date_=df_trade_cal['cal_date'].tolist()
+        trade_date_min,trade_date_max=trade_date_[0],trade_date_[-1]
+
+
+
+        stock_list=self.get_stock_list()
+        code__=[]
+        for code in stock_list['ts_code'].tolist():
+            
+            df=pd.read_csv(self.path+"/"+code+".csv", sep=",")
+            if len(df[df['trade_date']==trade_date_min])==1 and len(df[df['trade_date']==trade_date_max])==1:
+                code__.append(code)
+
+        return code__
+
 
 if __name__ == '__main__':
 
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
-    obj_read=read_data() #声明对象
-    #result=obj_read.get_daily_data(codelist=[],start_date=20210320,end_date=20210322,distance=1,columns=['ts_code','trade_date','open','high','low','close','rate_of_increase_next_1'])
-    result=obj_read.get_daily_data(codelist=['000001.SZ','sz'],except_codelist=['hs300','sz50','zxb','cyb'],start_date=20210301,end_date=20210305,distance=1,columns=['ts_code','trade_date','open','high','low','close','rate_of_increase_next_1'])
-    print(result)
-
-    #print(result)
-    #obj_read.save_local('test',result[2])
-    #result=obj_read.read_local('test')
-
+    obj_read=read_data()
+    obj_read.get_trade_cal_stock_list(start_date=20200304,end_date=20210308)
 #3D 混合
 #交易日剔除计算 ok
 #剔除其他 ok
