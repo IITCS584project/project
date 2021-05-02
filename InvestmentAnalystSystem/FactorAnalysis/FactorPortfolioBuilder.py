@@ -61,9 +61,10 @@ class FactorPortfolioBuilder:
 
 def Main():
     builder = FactorPortfolioBuilder()
-    factor = builder.BuildSingleFactor(['600859.SH', '600519.SH', 
-    '002624.SZ', '600887.SH', '600016.SH', '600030.SH', '600036.SH', '600600.SH', '300600.SZ'], 'pb', 20190110,20191029, 20)    
-    #factor = builder.BuildSingleFactor([], 'pb', 20190110,20191029, 20)    
+    #factor = builder.BuildSingleFactor(['600859.SH', '600519.SH', 
+    #'002624.SZ', '600887.SH', '600016.SH', '600030.SH', '600036.SH', '600600.SH', '300600.SZ'], 'pb', 20190110,20191029, 20)    
+    factor = builder.BuildSingleFactor([], 'pb', 20190110,20191029, 20)    
+
     factor_yields = factor.CalculateTimeSeriesYield(0,5, 20)
     is_significant ,t, p = factor.IsTimeSeriesYieldSignificant(factor_yields)
     print( 'mean',factor_yields.mean(), 'std', factor_yields.std(ddof=1))
