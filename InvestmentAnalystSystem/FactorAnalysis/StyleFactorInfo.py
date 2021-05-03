@@ -6,6 +6,8 @@ class StyleFactorInfo:
         self.mPortfolios = []
         pass
 
+    def SetTradingCalendar(self, trading_cal):
+        self.mTradingCalendar = trading_cal
 
     def AddPortfolio(self, portfolio :SpreadPortfolioInfo):
         self.mPortfolios.append(portfolio)
@@ -13,7 +15,7 @@ class StyleFactorInfo:
     
     
 
-    def CalculateFactorYield(self, start_tindex, end_tindex):
+    def CalculateFactorYield(self, start_date, due_date):
         '''
         计算因子某一段时间内的总收益率
         
@@ -27,22 +29,28 @@ class StyleFactorInfo:
         # 时间序列的收益率        
         total_yield = 1.0
         for portfolio in self.mPortfolios:
-                if not portfolio.IsValidTime(start_tindex) and not portfolio.IsValidTime(end_tindex):
+                if not portfolio.IsValidTime(start_date) and not portfolio.IsValidTime(due_date):
                     continue
-                portfolio_yield = portfolio.CalculateYield(start_tindex, end_tindex)                
+                portfolio_yield = portfolio.CalculateYield(start_date, due_date)                
                 total_yield *= 1.0 + portfolio_yield
         return total_yield - 1.0
     
-    def CalculateTimeSeriesYield(self, begin_tindex :int, distance :int, epoch_num :int) -> np.array:
+    def CalculateTimeSeriesYield(self, begin_date :int, distance :int, epoch_num :int) -> np.array:
         '''
         计算从begin_tindex开始，间隔为distance，连续epoch_num期的时间序列收益
+        begin_time: 开始日期
+        distance: 一期有多少交易日
+        epoch_num: 多少期
         '''
         factor_yields :np.array = np.zeros(epoch_num)
         cur_index = 0
+        begin_tindex = np.where(self.mTradingCalendar == begin_date)[0][0]
         for t in range(begin_tindex, begin_tindex + distance * epoch_num, distance):
-            begin_tindex = t
-            end_tindex = t + distance - 1
-            factor_yield :float = self.CalculateFactorYield(begin_tindex, end_tindex)
+            # 开始时间索引            
+            end_tindex = np.minimum(t + distance - 1, len(self.mTradingCalendar) - 1)
+            end_date = self.mTradingCalendar[end_tindex]
+
+            factor_yield :float = self.CalculateFactorYield(begin_date, end_date)
             factor_yields[cur_index] = factor_yield
             cur_index = cur_index + 1
 

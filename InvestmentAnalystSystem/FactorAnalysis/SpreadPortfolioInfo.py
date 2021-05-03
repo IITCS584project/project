@@ -7,9 +7,14 @@ class SpreadPortfolioInfo:
     '''
     def __init__(self):
         pass
-    def Init(self, begintime_index, duration, long_stockindices, short_stockindices, wholemarket_stocks, yieldcolumnindex, datecolumnindex):        
+    def Init(self, begin_date, due_date, duration, long_stockindices, short_stockindices, wholemarket_stocks, yieldcolumnindex, datecolumnindex):        
+        # 注意开始日期和结束日期并不一一对应交易日，但是开始日起对应asset data中的0号位置
+        # 开始日期
+        self.mBeginDate = begin_date
+        # 结束日期
+        self.mDueDate = due_date
         # 在全部stock中的时间开始索引
-        self.mBeginTimeIndex = begintime_index
+        self.mBeginTimeIndex = 0
         # 当前portfolio持续多少个交易日
         self.mDuration = duration
         # 做多的股票列表索引
@@ -32,7 +37,7 @@ class SpreadPortfolioInfo:
         self.CalculateDailyNAV(self.mYieldColumnIndex)
 
     def GetDateList(self):
-        date_list :np.array = self.mMarketStocks[0, self.mBeginTimeIndex : self.mBeginTimeIndex + self.mDuration, self.mDateColumnIndex ]
+        date_list :np.array = self.mMarketStocks[0, :, self.mDateColumnIndex ]
         return date_list
 
     def ExportToNPArray(self):
@@ -40,23 +45,27 @@ class SpreadPortfolioInfo:
         # 按列求和，就是所有股票净值相加
         longnav_bydate = self.mLongNAV.sum(axis=0)
         shortnav_bydate = self.mShortNAV.sum(axis=0)
+        # 得到了每一日的净值
         nav_bydate = longnav_bydate + shortnav_bydate
         nav_yesterday = nav_bydate[:-1]
-        nav_yesterday = np.concatenate([np.ones(len(nav_bydate),1), nav_yesterday])
+        nav_yesterday = np.concatenate([[1], nav_yesterday])
         yield_bydate = (nav_bydate - nav_yesterday) / nav_yesterday
         # 转置为列向量
         date_list = date_list.reshape(len(date_list),1)
-        yield_bydate = nav_bydate.reshape(len(yield_bydate),1)
+        yield_bydate = yield_bydate.reshape(len(yield_bydate),1)
         # 两列连接        
         dat = np.concatenate([date_list, yield_bydate], axis=1)        
         return dat
 
 
-    def IsValidTime(self, tindex):
-        return tindex >= self.mBeginTimeIndex and tindex < self.mBeginTimeIndex + self.mDuration
+    def IsValidTime(self, date):
+        begin_date = self.mMarketStocks[0,0,self.mDateColumnIndex]
+        due_date = self.mMarketStocks[0,-1,self.mDateColumnIndex]
+        return date >= begin_date and date <= due_date
 
     def CalculateDailyNAV(self, yield_column):
         '''
+        private
         计算每日净值
         '''
         #(long_num, days_num, feature_num)
@@ -72,7 +81,7 @@ class SpreadPortfolioInfo:
         long_nav = np.full(long_stocks.shape[0], 0.5 / long_num)
         short_nav = np.full(short_stocks.shape[0], 0.5/short_num)
         # 假设是首日开盘建仓        
-        for t in range(self.mBeginTimeIndex, self.mBeginTimeIndex + self.mDuration):
+        for t in range(0, long_stocks.shape[1]):
             # 第t日
             #(stock_num, )
             long_yield = long_stocks[:,t, yield_column]
@@ -85,10 +94,12 @@ class SpreadPortfolioInfo:
 
         pass
     
-    def CalculateYield(self, start_tindex, end_tindex):
+    def CalculateYield(self, begin_date, due_date):
         '''
         计算开始日期到结束日期的总收益率
         '''
+        start_tindex = np.where(0, begin_date , 0)
+        end_tindex = np.where(0, due_date,0)
         if (start_tindex >= self.mBeginTimeIndex + self.mDuration) or (end_tindex < self.mBeginTimeIndex):
             # 不在时间范围内，不会对yield产生变化
             return 0.0
