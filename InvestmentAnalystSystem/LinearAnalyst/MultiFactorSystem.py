@@ -76,7 +76,7 @@ class MultiFactorWorkspace:
         print("is significant:", is_significant, "t:", t, "p:", p, "loss.std:", loss.std(ddof = 1), "loss.mean:", loss.mean())
 
         pass
-
+'''
 def Main2():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'
@@ -179,3 +179,4 @@ def Main():
 
 
 Main2()
+'''
