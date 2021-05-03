@@ -11,7 +11,7 @@ from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
 import matplotlib.pyplot as plt
 from InvestmentAnalystSystem.Common.DrawFunctions import DrawFunctions
 
-class MultiFactorNNPricingSystem:
+class MultiFeatureNNPricingSystem:
     def __init__(self):
         pass
 
@@ -89,7 +89,7 @@ def Main():
     y_test = y_test.reshape(len(y_test), 1)
     y_test = StockDataProvider.NpArrayToTensor(y_test)
 
-    solver = MultiFactorNNPricingSystem()    
+    solver = MultiFeatureNNPricingSystem()    
     solver.FitAndTestAccuracy(X_train,y_train, X_test, y_test)
     solver.ShowParameters(plt)
 
