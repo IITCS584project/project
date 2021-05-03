@@ -5,6 +5,13 @@ from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcRiseDropPredictResult
 
 class StockDataProvider:
+
+    @staticmethod
+    def GetStockYields(market_ticker, start_date, end_date):
+        reader = read_data()
+        succ, info, asset_info = reader.get_daily_data([market_ticker], [], start_date, end_date, 1, ['ts_code', 'trade_date', 'rate_of_increase_1' ])
+        return succ, info ,asset_info[0]
+        
     @staticmethod
     def GetStockDataForPredict( asset_ticker, market_ticker, start_date, end_date ):
         reader = read_data()
@@ -44,6 +51,20 @@ class StockDataProvider:
         X = np.concatenate([stock_chracteristics, market_data], axis=1)
         y = true_y.reshape((len(true_y), 1))
         return X, y
+
+    @staticmethod
+    def LoadFama3(asset_ticker, market_ticker, start_date, end_date):
+        reader = read_data()
+        succ, info, asset_info = reader.get_daily_data( [asset_ticker], [] ,start_date, end_date, 1,
+                    ['ts_code', 'trade_date', 'rate_of_increase_next_5', 'vol', 'rate_of_increase_1', 'rate_of_increase_3', 
+                    'rate_of_increase_7', 'rate_of_increase_10', 'rate_of_increase_20', 'pe', 'pb', 'ps','dv_ratio',  
+                    'turnover_rate', 'volume_ratio'])
+        succ, info, market_info = reader.get_daily_data( [market_ticker], [] ,start_date, end_date, 1,
+                    ['ts_code', 'trade_date', 'vol', 'rate_of_increase_1' , 'rate_of_increase_3', 'rate_of_increase_7', 'rate_of_increase_20'])
+        smb = None
+        lmh = None
+        return asset_info, market_info, smb, lmh
+
 
     @staticmethod
     def GenStockData(stock_ticker, market_ticker, train_begindate, train_enddate, test_begindate, test_enddate):

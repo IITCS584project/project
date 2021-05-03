@@ -52,6 +52,33 @@ class UtilFuncs:
         '''
         y : int array
         '''
-        
+        pass
+    
+    @staticmethod
+    def TransformDailyYieldWithEpoch( daily_yield, start_date, due_date, date_column, yield_column, epoch ):
+        '''
+        将每日收益转换为隔日收益
+        epoch:相隔交易日的天数, epoch >= 1
+
+        从最后一个交易日向前计算，例如有1到10，10天的每日收益，epoch=2
+        则最后返回的是2,4,6,8,10的两日收益
+        '''
+        if epoch < 1:
+            epoch = 1
+        end_tindex = np.where(daily_yield[:, date_column] == due_date)[0][0]
+        start_tindex = np.where(daily_yield[:, date_column] == start_date)[0][0]
+        yield_list = []
+        for t in range(end_tindex, start_tindex, -epoch):
+            new_yield = 1.0
+            for k in range(epoch):
+                today_yield = daily_yield[t - k]
+                today_yield = today_yield[yield_column]
+                new_yield *= 1.0 + today_yield * 0.01
+            yield_list.append(new_yield)
+        yield_list.reverse()
+        yield_list = np.array(yield_list)
+        return (yield_list - 1.0) * 100
+
+
     
         
