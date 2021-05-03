@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcRiseDropPredictResult
-
+from scipy import stats
 class StockDataProvider:
 
     @staticmethod

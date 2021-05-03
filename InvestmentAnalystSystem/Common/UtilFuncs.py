@@ -1,5 +1,5 @@
 import numpy as np
-import scipy
+from scipy import stats
 class UtilFuncs:
     @staticmethod
     def R2(pred_Y :np.array, true_Y :np.array):
@@ -23,8 +23,16 @@ class UtilFuncs:
         '''
         is random variable X significant
         '''
-        zeros = np.zeros(len(X))
-        return UtilFuncs.CompareRandomVariable(X, zeros)
+        result = stats.ttest_1samp(X, 0.0)
+        t = result.statistic
+        p = result.pvalue
+        # 1.65,1.96,2.58
+        # 90%, 95%, 99%
+        if t > 1.65:
+            return True, t, p
+        else:
+            return False, t, p
+       
     
     @staticmethod
     def SplitData(X :np.array, y :np.array, train_perc, is_shuffle):

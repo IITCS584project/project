@@ -15,17 +15,17 @@ class MultiFactorSystem:
     def __init__(self):
         pass
 
-    def Init(self, feature_num :int):
+    def Init(self, feature_num :int, lr = 0.02):
         self.mSolver = NNRegressionSystem()
         self.mModel = FactorLinearNN(feature_num)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.01)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=lr)
         self.mLossFunc = nn.MSELoss()
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
         pass
     
     def Fit(self, X, y):
         self.Init(X.shape[1])
-        self.mSolver.Fit(X, y, 10000)
+        self.mSolver.Fit(X, y, 1000)
         pass
 
     def Predict(self, X :torch.Tensor):
@@ -40,11 +40,13 @@ class MultiFactorSystem:
     def ShowParameters(self):
         self.mSolver.ShowParameters()
 
-def TransformDailyYieldWithEpoch(self, daily_yield, date_column, yield_column, epoch ):
-    '''
-    将每日收益转换为
-    '''
 
+class MultiFactorWorkspace:
+    def __init__(self):
+
+        pass
+
+    def Run(self, start_date, due_date, X, y):
 
 
 def Main():
@@ -64,7 +66,7 @@ def Main():
     date_column = 1
     yield_column = 2
     # 一期的天数
-    epoch_days = 2
+    epoch_days = 1
     succ, info, market_dailyyield = StockDataProvider.GetStockYields(market_ticker, start_date, due_date )
     succ, info, stock_dailyield = StockDataProvider.GetStockYields(stock_ticker, start_date, due_date)
 
@@ -75,7 +77,7 @@ def Main():
 
     # 做时间序列上的回归
     # 训练期数，比如训练使用过去5期的数据，ground truth用未来1期的数据，采用mse损失函数
-    train_epochs = 5
+    train_epochs = 20
 
     solver = MultiFactorSystem()
     # 注意，训练的时候，都是当期训练
@@ -84,9 +86,36 @@ def Main():
     
     X = StockDataProvider.NpArrayToTensor(X)
     y = StockDataProvider.NpArrayToTensor(y)
-    X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
-    solver.Fit(X_train,y_train)
-    solver.ShowParameters()
+
+    loss = []
+    rf = 3.0
+    # 构造训练样本，每次训练样本数量为train_epochs个，预测样本为后面1期
+    for k in range(0, len(market_yield) - 1 - train_epochs):
+        market_train = market_yield[k:k+ train_epochs] - rf
+        train_y = stock_yield[k : k + train_epochs] - rf
+        market_test = market_yield[k + train_epochs]
+        test_y = stock_yield[k + train_epochs] - rf
+
+        market_train = market_train.reshape(len(market_train),1)
+        market_train = StockDataProvider.NpArrayToTensor(market_train)
+        train_y = train_y.reshape(len(train_y), 1)
+        train_y = StockDataProvider.NpArrayToTensor(train_y)
+        solver.Fit(market_train, train_y)
+        # 训练集各因子过去各期的均值作为该因子的下一期的预期收益
+        market_train_mean = market_train.mean()
+        market_train_mean = market_train_mean.reshape(1,1)
+        predict_y = solver.Predict(market_train_mean)
+        predict_y = predict_y.numpy()[0,0]
+        cur_loss = test_y - predict_y
+        loss.append(cur_loss)
+    loss = np.array(loss)
+    is_significant, t, p = UtilFuncs.IsSignificant(loss)
+    
+    print("is significant:", is_significant, "t:", t, "p:", p, "std:", loss.std(ddof = 1), "mean:", loss.mean())
+    
+    #X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
+    #solver.Fit(X_train,y_train)
+    #solver.ShowParameters()
     #pred_y = solver.Predict(X_test)
     #accuracy = solver.Accuracy(pred_y.T, y_test)
     #print(accuracy)
