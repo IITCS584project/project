@@ -10,7 +10,7 @@ from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
 import numpy as np
 
-class MultiFactorSystem:
+class MultiFeatureSystem:
     def __init__(self):
         pass
 
@@ -43,11 +43,7 @@ class MultiFactorSystem:
 def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'
-    # 这里输入的就不是股票的feature了，而是因子收益率
-    # 加载质量因子
-    # 加载规模因子
-    # 加载市场因子
-    solver = MultiFactorSystem()
+    solver = MultiFeatureSystem()    
     X, y = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20190305, 20200410)
     X = StockDataProvider.NpArrayToTensor(X)
     y = StockDataProvider.NpArrayToTensor(y)

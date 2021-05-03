@@ -75,7 +75,7 @@ class FactorPortfolioBuilder:
                 return
             loaded_stockinfo.append((asset_data, begin_date, due_date))
         # 把所有股票一共分为几段   
-        split_blocks :int = 3
+        split_blocks :int = 2
         # 遍历每个时间区间，构造因子portfolio
         factor_info = StyleFactorInfo()
         factor_info.SetTradingCalendar(trading_cal)
@@ -104,11 +104,13 @@ def Main():
     factor = builder.BuildSingleFactor(['600859.SH', '600519.SH', 
     '002624.SZ', '600887.SH', '600016.SH', '600030.SH', '600036.SH', '600600.SH', '300600.SZ'], [], 'pb', 20190110,20190310, 20)    
 
+    #factor = builder.BuildSingleFactor(['600859.SH', '600519.SH'], [], 'pb', 20190110,20190310, 20)    
+
     #factor = builder.BuildSingleFactor([], [], 'pb', 20190101,20191231, 20)    
     yield_data :np.array = factor.ExportToNpArray()
     reader = read_data()
-    #reader.save_local("PBLMH", yield_data)
-    yield_data = reader.read_local("PBLMH")
+    reader.save_local("PBLMH", yield_data)
+    yield_data2 = reader.read_local("PBLMH")
     factor_yields = factor.CalculateTimeSeriesYield(20190110,5, 20)
     is_significant ,t, p = factor.IsTimeSeriesYieldSignificant(factor_yields)
     print( 'mean',factor_yields.mean(), 'std', factor_yields.std(ddof=1))

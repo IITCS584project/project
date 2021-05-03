@@ -77,20 +77,10 @@ class MultiFactorNNPricingSystem:
 
 
 def Main():
-    
-    '''
-    market_ticker = 'hs300'
-    stock_ticker = '600859.SH'
-    solver = MultiFactorNNPricingSystem()    
-    X, y = StockDataProvider.GetStockDataForPredict(stock_ticker, market_ticker, 20200401, 20200810)    
-    X = StockDataProvider.NpArrayToTensor(X)
-    y = StockDataProvider.NpArrayToTensor(y)
-    X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
-    '''
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'        
     X_train, y_train, X_test, y_test = StockDataProvider().GenStockData(stock_ticker, market_ticker, 
-                20190201, 20190810, 20190820, 20191120 )
+                20190201, 20190810, 20200308, 20200315 )
 
     X_train = StockDataProvider.NpArrayToTensor(X_train)
     y_train = y_train.reshape(len(y_train), 1)

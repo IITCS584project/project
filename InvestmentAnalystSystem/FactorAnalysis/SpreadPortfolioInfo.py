@@ -13,8 +13,6 @@ class SpreadPortfolioInfo:
         self.mBeginDate = begin_date
         # 结束日期
         self.mDueDate = due_date
-        # 在全部stock中的时间开始索引
-        self.mBeginTimeIndex = 0
         # 当前portfolio持续多少个交易日
         self.mDuration = duration
         # 做多的股票列表索引
@@ -49,7 +47,8 @@ class SpreadPortfolioInfo:
         nav_bydate = longnav_bydate + shortnav_bydate
         nav_yesterday = nav_bydate[:-1]
         nav_yesterday = np.concatenate([[1], nav_yesterday])
-        yield_bydate = (nav_bydate - nav_yesterday) / nav_yesterday
+        # 输出的yield自带百分号
+        yield_bydate = (nav_bydate - nav_yesterday) * 100 / nav_yesterday
         # 转置为列向量
         date_list = date_list.reshape(len(date_list),1)
         yield_bydate = yield_bydate.reshape(len(yield_bydate),1)
@@ -89,8 +88,8 @@ class SpreadPortfolioInfo:
             # 计算当天收盘时的nav
             long_nav = long_nav * (long_yield * 0.01 + 1)
             short_nav = short_nav * (-short_yield * 0.01 + 1)
-            self.mLongNAV[:, t - self.mBeginTimeIndex] = long_nav
-            self.mShortNAV[:, t - self.mBeginTimeIndex] = short_nav
+            self.mLongNAV[:, t ] = long_nav
+            self.mShortNAV[:, t ] = short_nav
 
         pass
     
@@ -98,36 +97,38 @@ class SpreadPortfolioInfo:
         '''
         计算开始日期到结束日期的总收益率
         '''
-        start_tindex = np.where(0, begin_date , 0)
-        end_tindex = np.where(0, due_date,0)
-        if (start_tindex >= self.mBeginTimeIndex + self.mDuration) or (end_tindex < self.mBeginTimeIndex):
+        start_tindex = np.where(self.mMarketStocks[0, : , 1] == begin_date)
+        start_tindex = start_tindex[0][0]
+        end_tindex = np.where(self.mMarketStocks[0, :,1] == due_date)
+        end_tindex = end_tindex[0][0]
+        if (start_tindex >= self.mDuration) or (end_tindex < 0):
             # 不在时间范围内，不会对yield产生变化
             return 0.0
         
-        if start_tindex <= self.mBeginTimeIndex:
-            start_tindex = self.mBeginTimeIndex
-        if end_tindex >= self.mBeginTimeIndex + self.mDuration:
-            end_tindex = self.mBeginTimeIndex + self.mDuration - 1
+        if start_tindex < 0:
+            start_tindex = -1
+        if end_tindex >= self.mDuration:
+            end_tindex = self.mDuration - 1
         
         if end_tindex < start_tindex:
             return 0.0
 
-        # 统计从开始日到结束日到总收益率
+        # 统计从开始日到结束日的总收益率
         # 实际上是从开始日前一天计算净值，到结束日时到净值差异
         long_startnav = 0.5
         short_startnav = 0.5
-        if start_tindex > self.mBeginTimeIndex:
+        if start_tindex > 0:
             # 开始日前一天的nav
-            long_startnav = self.mLongNAV[:, start_tindex - 1 - self.mBeginTimeIndex]
-            short_startnav = self.mShortNAV[:, start_tindex - 1 - self.mBeginTimeIndex]
+            long_startnav = self.mLongNAV[:, start_tindex - 1]
+            short_startnav = self.mShortNAV[:, start_tindex - 1]
             # 所有股票相加
             long_startnav = long_startnav.sum()
             short_startnav = short_startnav.sum()
 
         
         
-        long_endnav = self.mLongNAV[:, end_tindex - self.mBeginTimeIndex].sum()
-        short_endnav = self.mShortNAV[:, end_tindex - self.mBeginTimeIndex].sum()
+        long_endnav = self.mLongNAV[:, end_tindex].sum()
+        short_endnav = self.mShortNAV[:, end_tindex ].sum()
 
         start_nav = long_startnav + short_startnav
         end_nav = long_endnav + short_endnav
