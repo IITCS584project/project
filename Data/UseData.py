@@ -164,12 +164,11 @@ class read_data():
 
             df.drop(columns=['Unnamed: 0'],inplace=True) # 文件内带有默认数字列，特定为了删除这个
 
-            
             df=df if  columns=='' else df[columns]
             res=df.values
             res_list.append(res)
 
-
+        #print(df)
 
         #20210430 如果有因为交易日历剔除数据就返回false
         if len(isopen_drop_list)>0:
@@ -232,18 +231,19 @@ class read_data():
             os.mkdir(path) 
         if type(msg) != type(np.array([0])):
             return ('msg is not type np.array,your  parameter is '+str(type(msg)))
-        df=pd.DataFrame(np.concatenate(msg))
-        df.to_csv(path+'/'+name+'.csv')
+
+
+        np.save(path+'/'+name+'.npy',msg,allow_pickle=True)
     def read_local(self,name):
         path=self.path+'/data_local'
         if not os.path.exists(path):
             os.mkdir(path) 
         try:        
-            df=pd.read_csv(path+'/'+name+'.csv')
+            res=np.load(path+'/'+name+'.npy',allow_pickle=True)
         except Exception as e:
             print(str(e))
             return 
-        return df.values
+        return res
 
     def read_trade_cal(self,start_date,end_date):
         df = pd.read_csv(self.path + "/trade_cal.csv", sep=",")
@@ -260,6 +260,7 @@ class read_data():
 
 
         stock_list=self.get_stock_list()
+        stock_list=stock_list[stock_list['industry']!='后补数据']
         code__=[]
         for code in stock_list['ts_code'].tolist():
             
@@ -275,7 +276,14 @@ if __name__ == '__main__':
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data()
-    obj_read.get_trade_cal_stock_list(start_date=20200304,end_date=20210308)
+    succ, info, market_info = obj_read.get_daily_data( ['hs300'], [] ,20200308, 20200315, 1,
+                    ['ts_code', 'trade_date', 'vol', 'rate_of_increase_1' , 'rate_of_increase_3', 'rate_of_increase_7', 'rate_of_increase_20'])
+    print(market_info)
+    obj_read.save_local('test',market_info)
+
+    print(333)
+    print(obj_read.read_local('test'))
+    
 #3D 混合
 #交易日剔除计算 ok
 #剔除其他 ok
