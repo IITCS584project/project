@@ -7,7 +7,7 @@ class SpreadPortfolioInfo:
     '''
     def __init__(self):
         pass
-    def Init(self, begintime_index, duration, long_stockindices, short_stockindices, wholemarket_stocks, yieldcolumnindex):        
+    def Init(self, begintime_index, duration, long_stockindices, short_stockindices, wholemarket_stocks, yieldcolumnindex, datecolumnindex):        
         # 在全部stock中的时间开始索引
         self.mBeginTimeIndex = begintime_index
         # 当前portfolio持续多少个交易日
@@ -18,11 +18,39 @@ class SpreadPortfolioInfo:
         self.mShortIndices = short_stockindices
         # 全市场股票信息
         self.mMarketStocks = wholemarket_stocks
+        # 收益率对应列
         self.mYieldColumnIndex = yieldcolumnindex
-        # 
+        # 日期对应列
+        self.mDateColumnIndex = datecolumnindex
+        # long nav
         self.mLongNAV :np.array = None
+        # short nav
         self.mShortNAV :np.array = None
+        # 每日收益率
+        self.mDailyYield :np.array = None
+
         self.CalculateDailyNAV(self.mYieldColumnIndex)
+
+    def GetDateList(self):
+        date_list :np.array = self.mMarketStocks[0, self.mBeginTimeIndex : self.mBeginTimeIndex + self.mDuration, self.mDateColumnIndex ]
+        return date_list
+
+    def ExportToNPArray(self):
+        date_list = self.GetDateList()
+        # 按列求和，就是所有股票净值相加
+        longnav_bydate = self.mLongNAV.sum(axis=0)
+        shortnav_bydate = self.mShortNAV.sum(axis=0)
+        nav_bydate = longnav_bydate + shortnav_bydate
+        nav_yesterday = nav_bydate[:-1]
+        nav_yesterday = np.concatenate([np.ones(len(nav_bydate),1), nav_yesterday])
+        yield_bydate = (nav_bydate - nav_yesterday) / nav_yesterday
+        # 转置为列向量
+        date_list = date_list.reshape(len(date_list),1)
+        yield_bydate = nav_bydate.reshape(len(yield_bydate),1)
+        # 两列连接        
+        dat = np.concatenate([date_list, yield_bydate], axis=1)        
+        return dat
+
 
     def IsValidTime(self, tindex):
         return tindex >= self.mBeginTimeIndex and tindex < self.mBeginTimeIndex + self.mDuration
@@ -37,7 +65,7 @@ class SpreadPortfolioInfo:
         #(short_num, days_num, feature_num)
         short_stocks = self.mMarketStocks[self.mShortIndices, :, :]
         short_num = len(self.mShortIndices)
-        
+        #(stock_num, times)
         self.mLongNAV = np.zeros((long_stocks.shape[0], self.mDuration))
         self.mShortNAV = np.zeros((short_stocks.shape[0], self.mDuration))
         # 建仓日第初始净值为
@@ -78,6 +106,7 @@ class SpreadPortfolioInfo:
         long_startnav = 0.5
         short_startnav = 0.5
         if start_tindex > self.mBeginTimeIndex:
+            # 开始日前一天的nav
             long_startnav = self.mLongNAV[:, start_tindex - 1 - self.mBeginTimeIndex]
             short_startnav = self.mShortNAV[:, start_tindex - 1 - self.mBeginTimeIndex]
             # 所有股票相加

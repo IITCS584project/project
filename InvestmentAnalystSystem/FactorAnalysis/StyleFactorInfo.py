@@ -6,9 +6,6 @@ class StyleFactorInfo:
         self.mPortfolios = []
         pass
 
-    def Init(self, date_column, yield_column):
-        self.mDateColumn = date_column
-        self.mYieldColumn = yield_column
 
     def AddPortfolio(self, portfolio :SpreadPortfolioInfo):
         self.mPortfolios.append(portfolio)
@@ -66,4 +63,20 @@ class StyleFactorInfo:
         else:
             return False, t, p
 
-    
+    def ExportToNpArray(self):
+        '''
+        导出为nparray
+        一共两列，第一列是date，第二列是当日的yield
+        '''
+        data :np.array = None
+        portfolio :SpreadPortfolioInfo = None
+        for portfolio in self.mPortfolios:
+            portfolio_data = portfolio.ExportToNPArray()
+            if data is None:
+                data = portfolio_data
+            else:
+                data = np.concatenate((data, portfolio_data))
+        # 根据日期排序
+        indices = data[:, 0].argsort()
+        data = data[indices]
+        return data        
