@@ -46,7 +46,63 @@ class MultiFactorWorkspace:
 
         pass
 
-    def Run(self, start_date, due_date, X, y):
+    def Run(self, start_date, due_date, train_epochs, X, y):
+        X = StockDataProvider.NpArrayToTensor(X)
+        y = StockDataProvider.NpArrayToTensor(y)
+        solver = MultiFactorSystem()
+        loss = []
+        # 构造训练样本，每次训练样本数量为train_epochs个，预测样本为后面1期
+        for k in range(0, len(y) - 1 - train_epochs):
+            # 每行是一个时间样本
+            train_X = X[k:k+ train_epochs, :]
+            train_y = y[k : k + train_epochs]
+            test_X = X[k + train_epochs, :]
+            test_y = y[k + train_epochs]
+
+            train_X = StockDataProvider.NpArrayToTensor(train_X)            
+            train_y = StockDataProvider.NpArrayToTensor(train_y)
+            solver.Fit(train_X, train_y)
+            # 训练集各因子过去各期的均值作为该因子的下一期的预期收益
+            # 按列取均值
+            train_X_mean = train_X.mean(axis=0)
+            
+            predict_y = solver.Predict(train_X_mean)
+            predict_y = predict_y.numpy()[0]
+            cur_loss = test_y - predict_y
+            loss.append(cur_loss)
+        loss = np.array(loss)
+        is_significant, t, p = UtilFuncs.IsSignificant(loss)
+        
+        print("is significant:", is_significant, "t:", t, "p:", p, "loss.std:", loss.std(ddof = 1), "loss.mean:", loss.mean())
+
+        pass
+
+def Main2():
+    market_ticker = 'hs300'
+    stock_ticker = '600859.SH'
+    start_date = 20190305
+    due_date = 20200410
+
+    # 市场因子
+    date_column = 1
+    yield_column = 2
+    # 一期的天数
+    epoch_days = 1
+    succ, info, market_dailyyield = StockDataProvider.GetStockYields(market_ticker, start_date, due_date )
+    succ, info, stock_dailyield = StockDataProvider.GetStockYields(stock_ticker, start_date, due_date)
+    rf = 3.0
+    market_yield = UtilFuncs.TransformDailyYieldWithEpoch(market_dailyyield, start_date, due_date, date_column, yield_column, epoch_days)
+    stock_yield = UtilFuncs.TransformDailyYieldWithEpoch(stock_dailyield, start_date, due_date, date_column, yield_column, epoch_days)
+    market_yield -= rf
+    stock_yield -= rf
+    market_yield = market_yield.reshape(len(market_yield),1)
+    stock_yield = stock_yield.reshape(len(stock_yield), 1)
+
+    # 做时间序列上的回归
+    # 训练期数，比如训练使用过去5期的数据，ground truth用未来1期的数据，采用mse损失函数
+    train_epochs = 20
+    ws = MultiFactorWorkspace()
+    ws.Run(start_date, due_date, train_epochs, market_yield, stock_yield)
 
 
 def Main():
@@ -54,7 +110,7 @@ def Main():
     stock_ticker = '600859.SH'
     start_date = 20190305
     due_date = 20200410
-    distance = 5
+    
 
     # 这里输入的就不是股票的feature了，而是因子收益率
     # 规模因子
@@ -111,7 +167,7 @@ def Main():
     loss = np.array(loss)
     is_significant, t, p = UtilFuncs.IsSignificant(loss)
     
-    print("is significant:", is_significant, "t:", t, "p:", p, "std:", loss.std(ddof = 1), "mean:", loss.mean())
+    print("is significant:", is_significant, "t:", t, "p:", p, "loss.std:", loss.std(ddof = 1), "loss.mean:", loss.mean())
     
     #X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
     #solver.Fit(X_train,y_train)
@@ -122,17 +178,4 @@ def Main():
     pass
 
 
-'''
-def Main2():
-    X, y = StockDataProvider.DummyGenerateStockData(100)
-    solver = MultiFactorSystem()
-    X = StockDataProvider.NpArrayToTensor(X)
-    y = StockDataProvider.NpArrayToTensor(y)
-    X_train, y_train, X_test, y_test = UtilFuncs.SplitData(X, y, 2.0 / 3.0, True)
-    solver.Fit(X_train,y_train)
-    solver.ShowParameters()    
-    #pred_y = solver.Predict(X_train)
-    #accuracy = solver.Accuracy(pred_y.T, y_train)
-    #print(accuracy)
-'''
-Main()
+Main2()
