@@ -253,6 +253,7 @@ class read_data():
     #20210502 增加返回限定日期内有交易股票的范围
     def get_trade_cal_stock_list(self,start_date,end_date):
         df_trade_cal=self.read_trade_cal(start_date=start_date,end_date=end_date)
+        df_trade_cal['trade_date']=df_trade_cal['cal_date']
         df_trade_cal=df_trade_cal[df_trade_cal['is_open']==1]
         trade_date_=df_trade_cal['cal_date'].tolist()
         trade_date_min,trade_date_max=trade_date_[0],trade_date_[-1]
@@ -261,11 +262,13 @@ class read_data():
 
         stock_list=self.get_stock_list()
         stock_list=stock_list[stock_list['industry']!='后补数据']
+        #stock_list=stock_list[stock_list['ts_code']=='000001.SZ']
         code__=[]
         for code in stock_list['ts_code'].tolist():
             
             df=pd.read_csv(self.path+"/"+code+".csv", sep=",")
-            if len(df[df['trade_date']==trade_date_min])==1 and len(df[df['trade_date']==trade_date_max])==1:
+            df=pd.merge(df,df_trade_cal,how='right',on=['trade_date'],sort=False,copy=True,suffixes=('','_y'))
+            if df['open'].isna().sum()==0:
                 code__.append(code)
 
         return code__
@@ -276,14 +279,7 @@ if __name__ == '__main__':
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data()
-    succ, info, market_info = obj_read.get_daily_data( ['hs300'], [] ,20200308, 20200315, 1,
-                    ['ts_code', 'trade_date', 'vol', 'rate_of_increase_1' , 'rate_of_increase_3', 'rate_of_increase_7', 'rate_of_increase_20'])
-    print(market_info)
-    obj_read.save_local('test',market_info)
-
-    print(333)
-    print(obj_read.read_local('test'))
-    
+    print(obj_read.get_trade_cal_stock_list(start_date=20150101,end_date=20210101))
 #3D 混合
 #交易日剔除计算 ok
 #剔除其他 ok
@@ -323,4 +319,3 @@ if __name__ == '__main__':
 #DIF
 #DEA
 #MACD
-
