@@ -79,7 +79,7 @@ class MultiFeatureNNPricingSystem:
         plt.legend()
         plt.show()
 
-
+'''
 def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'        
@@ -104,7 +104,7 @@ def Main():
     accuracy = solver.Accuracy(pred_y, y_test)
     print("Test accuracy", accuracy)
     pass
-'''
+
 def Main2():
     X, y = StockDataProvider.DummyGenerateStockData(100)
     solver = MultiFactorNNPricingSystem()

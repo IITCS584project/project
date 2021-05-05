@@ -22,3 +22,9 @@ def CalcRiseDropPredictResult(asset_yield :np.array):
     result = np.full(asset_yield.shape, RiseDropPredictResultType.Rise)
     result[asset_yield < 0] = RiseDropPredictResultType.Drop
     return result
+
+def JustifyRiseDrop( val ):
+    if val >= 0.0:
+        return RiseDropPredictResultType.Rise
+    else:
+        return RiseDropPredictResultType.Drop

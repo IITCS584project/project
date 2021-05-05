@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from Data.UseData import read_data
-from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcPredictResult
+from InvestmentAnalystSystem.Common.PredictResult import PredictResultType,CalcPredictResult, CalcRiseDropPredictResult, JustifyRiseDrop
 from Data.UseData import read_data
 from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
@@ -51,6 +51,8 @@ class MultiFactorWorkspace:
         y = StockDataProvider.NpArrayToTensor(y)
         solver = MultiFactorSystem()
         loss = []
+        accurate_num  = 0
+        total_testnum = 0
         # 构造训练样本，每次训练样本数量为train_epochs个，预测样本为后面1期
         for k in range(0, len(y) - 1 - train_epochs):
             # 每行是一个时间样本，注意用于训练的x和y都是当期的
@@ -69,11 +71,17 @@ class MultiFactorWorkspace:
             predict_y = solver.Predict(train_X_mean)
             predict_y = predict_y.numpy()[0]
             cur_loss = test_y - predict_y
+            predict_risedrop = JustifyRiseDrop(predict_y)
+            test_risedrop = JustifyRiseDrop(test_y)
+            total_testnum += 1
+            if predict_risedrop == test_risedrop:
+                accurate_num += 1            
             loss.append(cur_loss)
         loss = np.array(loss)
         is_significant, t, p = UtilFuncs.IsSignificant(loss)
         
         print("is significant:", is_significant, "t:", t, "p:", p, "loss.std:", loss.std(ddof = 1), "loss.mean:", loss.mean())
+        print( "accuracy", accurate_num * 1.0 / total_testnum )
 
         pass
 '''

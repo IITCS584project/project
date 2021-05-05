@@ -12,19 +12,24 @@ import numpy as np
 
 class MultiFeatureSystem:
     def __init__(self):
+        self.mLR = 0.001
         pass
+    
+    def SetDefaultLR(self, lr):
+        self.mLR = lr
+
 
     def Init(self, feature_num :int):
         self.mSolver = NNRegressionSystem()
         self.mModel = FactorLinearNN(feature_num)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.001)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=self.mLR)
         self.mLossFunc = nn.MSELoss()
         self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
         pass
     
-    def Fit(self, X, y):
+    def Fit(self, X, y, epochs = 10000):
         self.Init(X.shape[1])
-        self.mSolver.Fit(X, y, 10000)
+        self.mSolver.Fit(X, y, epochs)
         pass
 
     def Predict(self, X :torch.Tensor):
@@ -39,7 +44,7 @@ class MultiFeatureSystem:
     def ShowParameters(self):
         self.mSolver.ShowParameters()
 
-
+'''
 def Main():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'
@@ -56,7 +61,7 @@ def Main():
     pass
 
 
-'''
+
 def Main2():
     X, y = StockDataProvider.DummyGenerateStockData(100)
     solver = MultiFactorSystem()
@@ -69,4 +74,4 @@ def Main2():
     #accuracy = solver.Accuracy(pred_y.T, y_train)
     #print(accuracy)
 '''
-Main()
+#Main()

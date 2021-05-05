@@ -27,9 +27,11 @@ def Main2():
     succ, info, market_dailyyield = StockDataProvider.GetStockYields(market_ticker, start_date, due_date )
     succ, info, stock_dailyield = StockDataProvider.GetStockYields(stock_ticker, start_date, due_date)
     # 假设无风险利率为3
-    rf = 3.0
+    rf = 3.0 / 365.0
     market_yield = UtilFuncs.TransformDailyYieldWithEpoch(market_dailyyield, start_date, due_date, date_column, yield_column, epoch_days)
     stock_yield = UtilFuncs.TransformDailyYieldWithEpoch(stock_dailyield, start_date, due_date, date_column, yield_column, epoch_days)
+    stock_yield = stock_dailyield[:,2]
+    market_yield = market_dailyyield[:, 2]
     market_yield -= rf
     stock_yield -= rf
     market_yield = market_yield.reshape(len(market_yield),1)
