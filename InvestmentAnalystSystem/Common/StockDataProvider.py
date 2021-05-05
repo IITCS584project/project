@@ -76,6 +76,7 @@ class StockDataProvider:
         
         return X_train, y_train, X_test, y_test    
     
+    
 
     @staticmethod
     def NpArrayToTensor(X):
@@ -88,4 +89,27 @@ class StockDataProvider:
         #X += np.random.rand() - 0.5      
         X = X.reshape((len(X),1))  
         y = y.reshape((len(y),1))
+        return X, y
+
+    @staticmethod
+    def GetStockDataForTTest( asset_ticker, market_ticker, start_date, end_date ):
+        reader = read_data()
+        vol_column = 3
+        
+        succ, info, asset_info = reader.get_daily_data( [asset_ticker], [] ,start_date, end_date, 1,
+                    ['ts_code', 'trade_date', 'rate_of_increase_next_1', 'vol', 'rate_of_increase_1', 'rate_of_increase_3', 
+                    'rate_of_increase_7', 'rate_of_increase_10', 'rate_of_increase_20', 'pe', 'pb', 'ps','dv_ratio',  
+                    'turnover_rate', 'volume_ratio'])
+        
+
+        succ, info, market_info = reader.get_daily_data( [market_ticker], [] ,start_date, end_date, 1,
+                    ['ts_code', 'trade_date', 'rate_of_increase_1', 'vol', 'rate_of_increase_3', 'rate_of_increase_7', 'rate_of_increase_20'])
+        
+        
+
+        asset_info[0,:, vol_column] = UtilFuncs.Normalize(asset_info[0, :, vol_column])
+        market_info[0, :, vol_column] = UtilFuncs.Normalize(market_info[0, :, vol_column])
+        y = asset_info[0, :, 2]
+        X = np.concatenate([asset_info[0, :,3:], market_info[0, :,2:]], axis=1)
+        
         return X, y

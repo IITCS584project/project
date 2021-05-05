@@ -15,13 +15,16 @@ class MultiFeatureNNPricingSystem:
     def __init__(self):
         pass
 
-    def Init(self, feature_num :int):
+    def Init(self, feature_num :int, enableAccuracyTestDuringFit = True):
         self.mSolver = NNRegressionSystem()
         self.mModel = MultiFactorNN(feature_num)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.0004, momentum=0.9, weight_decay = 0.5)
+        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=0.0001, momentum=0.9, weight_decay = 0.3)
         #self.mOptimizer = optim.Adam(self.mModel.parameters(), lr=0.0004, weight_decay=0)
         self.mLossFunc = nn.MSELoss()
-        self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc, self.CallbackDuringFit, 100 )
+        callback = self.CallbackDuringFit
+        if enableAccuracyTestDuringFit == False:
+            callback = None
+        self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc, callback, 100 )
         self.mTrainAccuracyHistory = []
         self.mTestAccuracyHistory = []
         
@@ -37,16 +40,17 @@ class MultiFeatureNNPricingSystem:
         pass
 
     def FitAndTestAccuracy(self, X_train, y_train, X_test, y_test):
-        self.mXTrain = X_train
-        self.mYTrain = y_train
+        
         self.mXTest = X_test
         self.mYTest = y_test
-        self.Fit(X_train, y_train)
+        self.Fit(X_train, y_train, True)
 
 
-    def Fit(self, X,y):
-        self.Init(X.shape[1])
-        self.mSolver.Fit(X, y, 150)        
+    def Fit(self, X,y, enableAccuracyTestDuringFit = False):
+        self.mXTrain = X
+        self.mYTrain = y
+        self.Init(X.shape[1], enableAccuracyTestDuringFit)
+        self.mSolver.Fit(X, y, 15000)        
         
     def Predict(self, X):
         return self.mSolver.Predict(X)
@@ -114,4 +118,4 @@ def Main2():
     print(accuracy)
 '''
 
-Main()
+#Main()

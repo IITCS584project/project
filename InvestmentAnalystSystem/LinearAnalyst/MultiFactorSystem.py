@@ -53,10 +53,10 @@ class MultiFactorWorkspace:
         loss = []
         # 构造训练样本，每次训练样本数量为train_epochs个，预测样本为后面1期
         for k in range(0, len(y) - 1 - train_epochs):
-            # 每行是一个时间样本
+            # 每行是一个时间样本，注意用于训练的x和y都是当期的
             train_X = X[k:k+ train_epochs, :]
             train_y = y[k : k + train_epochs]
-            test_X = X[k + train_epochs, :]
+            # 用于测试的y是下一期的            
             test_y = y[k + train_epochs]
 
             train_X = StockDataProvider.NpArrayToTensor(train_X)            

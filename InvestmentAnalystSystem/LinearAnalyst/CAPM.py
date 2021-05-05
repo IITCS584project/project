@@ -14,8 +14,10 @@ from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
 def Main2():
     market_ticker = 'hs300'
     stock_ticker = '600859.SH'
-    start_date = 20190305
-    due_date = 20200410
+    #start_date = 20190305
+    #due_date = 20200410
+    start_date = 20190201
+    due_date = 20190415
 
     # 市场因子
     date_column = 1
