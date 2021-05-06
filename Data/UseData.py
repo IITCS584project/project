@@ -272,15 +272,28 @@ class read_data():
                 code__.append(code)
 
         return code__
-
-
+    #20210507增加返回指定日期制定列的因子数据
+    def get_factor_daily(self,start_date,end_date,columns=''):
+        df=pd.read_csv(self.path+"/fivefactor_daily.csv", sep=",")
+        df['trade_date']=df['trddy'].str.replace('-','').astype(int)
+        df = df.loc[df["trade_date"] >= start_date] if start_date != '' else df
+        df = df.loc[df["trade_date"] <= end_date] if end_date != '' else df # 截取日期片
+        df.drop(columns=['trddy'],inplace=True)
+        df=df.sort_values(["trade_date"],ascending=True)
+        df['trade_date']=df['trade_date'].astype(str)
+        df=df if  columns=='' else df[columns]
+        
+        return (True,'',df.values)
 if __name__ == '__main__':
 
     #code=['sh','sz','hs300','sz50','zxb','cyb']
 
     obj_read=read_data()
-    print(obj_read.get_trade_cal_stock_list(start_date=20150101,end_date=20210101))
+    res=obj_read.get_factor_daily(start_date=20200101,end_date=20210501,columns=['trade_date','smb','hml','umd'])
+    print(res)
+
 #3D 混合
+
 #交易日剔除计算 ok
 #剔除其他 ok
 # 只有用到计算指标的时候再计算 ok
@@ -319,3 +332,4 @@ if __name__ == '__main__':
 #DIF
 #DEA
 #MACD
+
