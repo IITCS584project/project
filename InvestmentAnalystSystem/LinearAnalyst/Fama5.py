@@ -13,17 +13,24 @@ from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
 
 
 def Main2():
-    market_ticker = 'hs300'
     stock_ticker = '600859.SH'
     start_date = 20190305
     due_date = 20200410
     #start_date = 20190201
     #due_date = 20190415
     reader = read_data()
-    succ,info,factor_data = reader.get_factor_daily(start_date=start_date,end_date=due_date,columns=['trade_date', 'mkt_rf', 'rf'])
+    succ,info,factor_data = reader.get_factor_daily(start_date=start_date,end_date=due_date,columns=['trade_date', 'mkt_rf','smb','hml', 'rmw', 'cma', 'rf'])
     mkt_rf = factor_data[:,1] * 100
     mkt_rf = mkt_rf.reshape(len(mkt_rf),1)
-    rf = factor_data[:, 2] * 100
+    smb = factor_data[:,2] * 100
+    smb = mkt_rf.reshape(len(smb),1)
+    hml = factor_data[:,3] * 100
+    hml = hml.reshape(len(hml),1)
+    rmw = factor_data[:,3] * 100
+    rmw = rmw.reshape(len(rmw),1)
+    cma = factor_data[:,3] * 100
+    cma = cma.reshape(len(cma),1)
+    rf = factor_data[:, 6] * 100
     
 
     # 市场因子
@@ -34,7 +41,7 @@ def Main2():
     #succ, info, market_dailyyield = StockDataProvider.GetStockYields(market_ticker, start_date, due_date )
     succ, info, stock_dailyield = StockDataProvider.GetStockYields(stock_ticker, start_date, due_date)
     stock_yield = stock_dailyield[:,2]
-    X = mkt_rf
+    X = np.concatenate([mkt_rf, smb, hml, rmw, cma], axis=1)
     y = stock_yield - rf    
     y = y.reshape(len(y),1)
     
@@ -44,6 +51,6 @@ def Main2():
     train_epochs = 20
     ws = MultiFactorWorkspace()
     
-    ws.Run(0.02, 1500, start_date, due_date, train_epochs, X, y)
+    ws.Run(0.02, 2000, start_date, due_date, train_epochs, X, y)
     
 Main2()

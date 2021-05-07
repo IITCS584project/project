@@ -13,7 +13,13 @@ import numpy as np
 
 class MultiFactorSystem:
     def __init__(self):
+        self.mLR = 0.02
+        self.mEpochs = 1500
         pass
+
+    def SetFitParameters(self, lr, epochs):
+        self.mLR = lr
+        self.mEpochs = epochs
 
     def Init(self, feature_num :int, lr = 0.02):
         self.mSolver = NNRegressionSystem()
@@ -24,8 +30,8 @@ class MultiFactorSystem:
         pass
     
     def Fit(self, X, y):
-        self.Init(X.shape[1])
-        self.mSolver.Fit(X, y, 1000)
+        self.Init(X.shape[1], self.mLR)
+        self.mSolver.Fit(X, y, self.mEpochs)
         pass
 
     def Predict(self, X :torch.Tensor):
@@ -46,10 +52,11 @@ class MultiFactorWorkspace:
 
         pass
 
-    def Run(self, start_date, due_date, train_epochs, X, y):
+    def Run(self, lr, epochs, start_date, due_date, train_epochs, X, y):
         X = StockDataProvider.NpArrayToTensor(X)
         y = StockDataProvider.NpArrayToTensor(y)
         solver = MultiFactorSystem()
+        solver.SetFitParameters(lr, epochs)
         loss = []
         accurate_num  = 0
         total_testnum = 0
@@ -70,13 +77,14 @@ class MultiFactorWorkspace:
             
             predict_y = solver.Predict(train_X_mean)
             predict_y = predict_y.numpy()[0]
+            
             cur_loss = test_y - predict_y
             predict_risedrop = JustifyRiseDrop(predict_y)
             test_risedrop = JustifyRiseDrop(test_y)
             total_testnum += 1
             if predict_risedrop == test_risedrop:
                 accurate_num += 1            
-            loss.append(cur_loss)
+            loss.append(cur_loss.item())
         loss = np.array(loss)
         is_significant, t, p = UtilFuncs.IsSignificant(loss)
         
