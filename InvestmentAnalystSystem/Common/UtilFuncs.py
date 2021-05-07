@@ -6,8 +6,16 @@ class UtilFuncs:
         '''
         R-squared
         '''
-        r2 = 1.0 - ( (true_Y - pred_Y) ** 2 ).sum() / (( true_Y - true_Y.mean() ) ** 2).sum()
+        mean_y = true_Y.mean()
+        r2 = ((pred_Y - mean_y) ** 2).sum() / ((true_Y - mean_y) ** 2).sum()
         return r2
+
+    @staticmethod
+    def AdjustedR2( feature_num :int, pred_Y :np.array, true_Y :np.array):
+        sample_num = len(pred_Y)
+        r2 = UtilFuncs.R2(pred_Y, true_Y)
+        adjusted_r2 = 1 - (sample_num - 1) / ( sample_num - feature_num - 1) * (1 - r2)
+        return adjusted_r2
 
     @staticmethod
     def CompareRandomVariable( y1 :np.array, y2 :np.array):

@@ -14,10 +14,10 @@ from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
 
 def Main2():
     stock_ticker = '600859.SH'
-    #start_date = 20190305
-    #due_date = 20200410
-    start_date = 20190201
-    due_date = 20190415
+    start_date = 20190305
+    due_date = 20200410
+    #start_date = 20190201
+    #due_date = 20190415
     reader = read_data()
     succ,info,factor_data = reader.get_factor_daily(start_date=start_date,end_date=due_date,columns=['trade_date', 'mkt_rf','smb','hml', 'rf'])
     mkt_rf = factor_data[:,1] * 100

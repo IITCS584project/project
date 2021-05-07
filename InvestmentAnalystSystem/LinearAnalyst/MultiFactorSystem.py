@@ -32,7 +32,10 @@ class MultiFactorSystem:
     def Fit(self, X, y):
         self.Init(X.shape[1], self.mLR)
         self.mSolver.Fit(X, y, self.mEpochs)
-        pass
+        predict_y = self.mSolver.Predict(X)
+        r2 = UtilFuncs.R2(predict_y, y)
+        adj_r2 = UtilFuncs().AdjustedR2(X.shape[1], predict_y, y)
+        return r2, adj_r2
 
     def Predict(self, X :torch.Tensor):
         return self.mSolver.Predict(X)
@@ -58,6 +61,8 @@ class MultiFactorWorkspace:
         solver = MultiFactorSystem()
         solver.SetFitParameters(lr, epochs)
         loss = []
+        r2_list = []
+        adjr2_list = []
         accurate_num  = 0
         total_testnum = 0
         # 构造训练样本，每次训练样本数量为train_epochs个，预测样本为后面1期
@@ -70,7 +75,10 @@ class MultiFactorWorkspace:
 
             train_X = StockDataProvider.NpArrayToTensor(train_X)            
             train_y = StockDataProvider.NpArrayToTensor(train_y)
-            solver.Fit(train_X, train_y)
+            r2, adj_r2 = solver.Fit(train_X, train_y)
+            r2_list.append(r2.item())
+            adjr2_list.append(adj_r2.item())
+            
             # 训练集各因子过去各期的均值作为该因子的下一期的预期收益
             # 按列取均值
             train_X_mean = train_X.mean(axis=0)
@@ -86,9 +94,12 @@ class MultiFactorWorkspace:
                 accurate_num += 1            
             loss.append(cur_loss.item())
         loss = np.array(loss)
+        r2_list = np.array(r2_list)
+        adjr2_list = np.array(adjr2_list)
         is_significant, t, p = UtilFuncs.IsSignificant(loss)
         
-        print("is significant:", is_significant, "t:", t, "p:", p, "loss.std:", loss.std(ddof = 1), "loss.mean:", loss.mean())
+        print("is significant:", is_significant, "t:", t, "p:", p, "loss.std:", loss.std(ddof = 1), 
+                    "loss.mean:", loss.mean(), 'avg r2', r2_list.mean(), 'avg adj r2', adjr2_list.mean())
         print( "accuracy", accurate_num * 1.0 / total_testnum )
 
         pass
