@@ -44,6 +44,7 @@ def Main2():
     train_epochs = 20
     ws = MultiFactorWorkspace()
     
-    ws.Run(0.02, 1500, start_date, due_date, train_epochs, X, y)
+    ws.Run(start_date, due_date, train_epochs, X, y)
     
-Main2()
+if __name__ == '__main__':
+    Main2()

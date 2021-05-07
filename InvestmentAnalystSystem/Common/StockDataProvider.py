@@ -11,7 +11,12 @@ class StockDataProvider:
         reader = read_data()
         succ, info, asset_info = reader.get_daily_data([market_ticker], [], start_date, end_date, 1, ['ts_code', 'trade_date', 'rate_of_increase_1' ])
         return succ, info ,asset_info[0]
-        
+
+    def GetMultiStockYields( stock_tickerlist, start_date, end_date ):
+        reader = read_data()
+        succ, info, asset_info = reader.get_daily_data(stock_tickerlist, [], start_date, end_date, 1, ['ts_code', 'trade_date', 'rate_of_increase_1' ])
+        return succ, info ,asset_info
+
     @staticmethod
     def GetStockDataForPredict( asset_ticker, market_ticker, start_date, end_date ):
         reader = read_data()

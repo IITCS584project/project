@@ -18,7 +18,7 @@ class FactorPortfolioBuilder:
         splited_indices = np.array_split(indices, split_num)
         return splited_indices
 
-    
+
     def CalculateFama3Stocks(self, stock_array :np.array, pb_column :int, totalmv_column):
         #pb从小到大排
         pb_lh_indices = stock_array[:, pb_column].argsort()

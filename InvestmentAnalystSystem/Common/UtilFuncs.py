@@ -1,13 +1,13 @@
 import numpy as np
 from scipy import stats
+from sklearn.metrics import r2_score
 class UtilFuncs:
     @staticmethod
     def R2(pred_Y :np.array, true_Y :np.array):
         '''
         R-squared
-        '''
-        mean_y = true_Y.mean()
-        r2 = ((pred_Y - mean_y) ** 2).sum() / ((true_Y - mean_y) ** 2).sum()
+        '''        
+        r2 = r2_score(true_Y, pred_Y)
         return r2
 
     @staticmethod

@@ -10,35 +10,24 @@ from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
 from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 import numpy as np
+from sklearn.linear_model import LinearRegression
 
 class MultiFactorSystem:
     def __init__(self):
-        self.mLR = 0.02
-        self.mEpochs = 1500
+        
         pass
 
-    def SetFitParameters(self, lr, epochs):
-        self.mLR = lr
-        self.mEpochs = epochs
+   
 
-    def Init(self, feature_num :int, lr = 0.02):
-        self.mSolver = NNRegressionSystem()
-        self.mModel = FactorLinearNN(feature_num)
-        self.mOptimizer = optim.SGD(self.mModel.parameters(), lr=lr)
-        self.mLossFunc = nn.MSELoss()
-        self.mSolver.Init(self.mModel, self.mOptimizer, self.mLossFunc )
-        pass
-    
     def Fit(self, X, y):
-        self.Init(X.shape[1], self.mLR)
-        self.mSolver.Fit(X, y, self.mEpochs)
-        predict_y = self.mSolver.Predict(X)
-        r2 = UtilFuncs.R2(predict_y, y)
-        adj_r2 = UtilFuncs().AdjustedR2(X.shape[1], predict_y, y)
-        return r2, adj_r2
+        #self.Init(X.shape[1], self.mLR)
+        #self.mSolver.Fit(X, y, self.mEpochs)
+        self.mReg = LinearRegression(n_jobs = -1).fit(X, y)
+        r2 = self.mReg.score(X,y)        
+        return r2
 
     def Predict(self, X :torch.Tensor):
-        return self.mSolver.Predict(X)
+        return self.mReg.predict(X)
         
 
     def Accuracy(self, pred_y :np.array, true_y :np.array):
@@ -55,14 +44,14 @@ class MultiFactorWorkspace:
 
         pass
 
-    def Run(self, lr, epochs, start_date, due_date, train_epochs, X, y):
-        X = StockDataProvider.NpArrayToTensor(X)
-        y = StockDataProvider.NpArrayToTensor(y)
+    def Run(self, start_date, due_date, train_epochs, X, y):
+        #X = StockDataProvider.NpArrayToTensor(X)
+        #y = StockDataProvider.NpArrayToTensor(y)
         solver = MultiFactorSystem()
-        solver.SetFitParameters(lr, epochs)
+        
         loss = []
         r2_list = []
-        adjr2_list = []
+        
         accurate_num  = 0
         total_testnum = 0
         # 构造训练样本，每次训练样本数量为train_epochs个，预测样本为后面1期
@@ -71,20 +60,18 @@ class MultiFactorWorkspace:
             train_X = X[k:k+ train_epochs, :]
             train_y = y[k : k + train_epochs]
             # 用于测试的y是下一期的            
-            test_y = y[k + train_epochs]
+            test_y = y[k + train_epochs][0]
 
-            train_X = StockDataProvider.NpArrayToTensor(train_X)            
-            train_y = StockDataProvider.NpArrayToTensor(train_y)
-            r2, adj_r2 = solver.Fit(train_X, train_y)
-            r2_list.append(r2.item())
-            adjr2_list.append(adj_r2.item())
+            r2 = solver.Fit(train_X, train_y)
+            r2_list.append(r2)
+            
             
             # 训练集各因子过去各期的均值作为该因子的下一期的预期收益
             # 按列取均值
             train_X_mean = train_X.mean(axis=0)
-            
+            train_X_mean = train_X_mean.reshape(1, len(train_X_mean))
             predict_y = solver.Predict(train_X_mean)
-            predict_y = predict_y.numpy()[0]
+            predict_y = predict_y[0][0]
             
             cur_loss = test_y - predict_y
             predict_risedrop = JustifyRiseDrop(predict_y)
@@ -92,17 +79,22 @@ class MultiFactorWorkspace:
             total_testnum += 1
             if predict_risedrop == test_risedrop:
                 accurate_num += 1            
-            loss.append(cur_loss.item())
+            loss.append(cur_loss)
         loss = np.array(loss)
+        
         r2_list = np.array(r2_list)
-        adjr2_list = np.array(adjr2_list)
         is_significant, t, p = UtilFuncs.IsSignificant(loss)
         
         print("is significant:", is_significant, "t:", t, "p:", p, "loss.std:", loss.std(ddof = 1), 
-                    "loss.mean:", loss.mean(), 'avg r2', r2_list.mean(), 'avg adj r2', adjr2_list.mean())
+                    "loss.mean:", loss.mean(), 'avg r2', r2_list.mean())
         print( "accuracy", accurate_num * 1.0 / total_testnum )
-
-        pass
+        return r2_list.mean()
+        
+    def LinearRegresion(self, X, y):
+        solver = MultiFactorSystem()
+        r2 = solver.Fit(X,y)
+        return r2
+        
 '''
 def Main2():
     market_ticker = 'hs300'
