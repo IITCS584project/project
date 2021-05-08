@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from InvestmentAnalystSystem.Common.UtilFuncs import UtilFuncs
 from InvestmentAnalystSystem.LinearAnalyst.MultiFactorSystem import MultiFactorWorkspace
 from InvestmentAnalystSystem.Common.StockDataProvider import StockDataProvider
-
+from InvestmentAnalystSystem.Common.DrawFunctions import DrawFunctions
 
 
 def Main2():
@@ -53,6 +53,7 @@ def Main2():
         r2_list.append(r2)
     r2 = np.array(r2_list)
     print("r2.mean", r2.mean(), "r2.std", r2.std())
+    DrawFunctions.DrawErrors(plt, 'Carhart 4 Whole Market R-Squared', r2)
     
 if __name__ == '__main__':
     Main2()

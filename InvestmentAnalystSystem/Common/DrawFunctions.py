@@ -25,3 +25,12 @@ class DrawFunctions:
         plt.title(title)
         plt.plot(x_data, y, color=(0,0,1))
         pass
+
+    @staticmethod
+    def DrawErrors(plt, title, errors :np.array):
+        min_val = errors.min()
+        max_val = errors.max()
+        plt.title(title)
+        plt.hist(errors, bins=20)
+        plt.show()
+        pass
